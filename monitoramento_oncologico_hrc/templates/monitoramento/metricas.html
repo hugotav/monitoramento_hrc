@@ -1,0 +1,112 @@
+{% extends 'monitoramento/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="titulo-pagina"><i class="fa-solid fa-chart-pie me-2"></i> Dashboard de Métricas</h2>
+    <h5 class="text-muted">Total de Pacientes: <span class="badge badge-azul-padrao">{{ total_pacientes }}</span></h5>
+</div>
+
+<div class="row g-4">
+    <!-- Gráfico de Situação (Rosca) -->
+    <div class="col-md-5">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-header-blue">Situação Atual dos Pacientes</div>
+            <div class="card-body">
+                <canvas id="graficoSituacao"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Especialidade (Barras) -->
+    <div class="col-md-7">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-header-blue">Pacientes por Especialidade</div>
+            <div class="card-body">
+                <canvas id="graficoEspecialidade"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Tratamentos (Barras Horizontais) -->
+    <div class="col-md-12">
+        <div class="card shadow-sm mt-2 mb-4">
+            <div class="card-header bg-header-blue">Levantamento de Tratamentos Realizados</div>
+            <div class="card-body">
+                <canvas id="graficoTratamentos" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Importando o Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Recuperando os dados enviados pelo Django com a tag "safe" para evitar erro de caracteres
+    const labelsEspecialidade = {{ labels_especialidade|safe }};
+    const dadosEspecialidade = {{ dados_especialidade|safe }};
+    
+    const labelsSituacao = {{ labels_situacao|safe }};
+    const dadosSituacao = {{ dados_situacao|safe }};
+    
+    const labelsTratamentos = {{ labels_tratamentos|safe }};
+    const dadosTratamentos = {{ dados_tratamentos|safe }};
+
+    const corAzul = '#0A3D62';
+    const corAzulClaro = '#1E6091';
+    const corVinho = '#85182A';     // Vermelho escuro/sóbrio
+    const corMostarda = '#DDA15E';  // Amarelo elegante
+    const corVerdeMusgo = '#2C6E49';// Verde fechado
+
+    // 1. Gráfico de Situação (Doughnut)
+    new Chart(document.getElementById('graficoSituacao'), {
+        type: 'doughnut',
+        data: {
+            labels: labelsSituacao,
+            datasets: [{
+                data: dadosSituacao,
+                backgroundColor: [corAzul, corVinho, corMostarda, corVerdeMusgo],
+            }]
+        }
+    });
+
+    // 2. Gráfico de Especialidade (Bar)
+    new Chart(document.getElementById('graficoEspecialidade'), {
+        type: 'bar',
+        data: {
+            labels: labelsEspecialidade,
+            datasets: [{
+                label: 'Qtd de Pacientes',
+                data: dadosEspecialidade,
+                backgroundColor: corAzul, // Azul Profundo
+                borderRadius: 5, // Deixa as pontas da barra arredondadas
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+
+    // 3. Gráfico de Tratamentos (Barra Horizontal)
+    new Chart(document.getElementById('graficoTratamentos'), {
+        type: 'bar',
+        data: {
+            labels: labelsTratamentos,
+            datasets: [{
+                label: 'Tratamentos Registrados',
+                data: dadosTratamentos,
+                backgroundColor: corAzulClaro, // Azul Secundário para dar um leve contraste
+                borderRadius: 5,
+            }]
+        },
+        options: {
+            indexAxis: 'y', // Isso transforma o gráfico em barras horizontais
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+</script>
+{% endblock %}

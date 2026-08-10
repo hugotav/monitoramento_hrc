@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento Oncológico HRC</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- FontAwesome (Ícones) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* DEFINIÇÃO DA PALETA AZUL UNIFICADA */
+        :root {
+            --primary-blue: #0A3D62;     /* Azul profundo do Menu Superior */
+            --secondary-blue: #1E6091;   /* Azul mais claro do gradiente do Menu */
+            --light-bg: #F4F7F6;         /* Fundo cinza claro */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: #333;
+        }
+
+        /* Menu Superior */
+        .navbar {
+            background: linear-gradient(90deg, var(--primary-blue) 0%, var(--secondary-blue) 100%) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 15px 0;
+        }
+        .navbar-brand { font-weight: 700; letter-spacing: 1px; font-size: 1.3rem; }
+        .nav-link { font-weight: 500; margin-left: 15px; transition: all 0.3s ease; }
+        .nav-link:hover, .nav-link.active { color: #FFD166 !important; transform: translateY(-2px); }
+
+        /* Container Branco */
+        .container-main {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin-top: -30px;
+            margin-bottom: 40px;
+            border-top: 5px solid var(--primary-blue);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* PADRONIZAÇÃO DOS TÍTULOS (Usando o Azul Profundo) */
+        h2.titulo-pagina {
+            color: var(--primary-blue);
+            font-weight: 700;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+        }
+
+        /* CABEÇALHOS DE TABELAS E GRÁFICOS (Usando o Azul Profundo) */
+        .bg-header-blue {
+            background-color: var(--primary-blue) !important;
+            color: white !important;
+        }
+        
+        .table thead.bg-header-blue th {
+            background-color: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+            font-weight: 600;
+        }
+        .btn-azul-padrao {
+            background-color: var(--secondary-blue);
+            color: white;
+            border: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .btn-azul-padrao:hover {
+            background-color: var(--primary-blue);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(10, 61, 98, 0.3);
+        }
+        .badge-azul-padrao {
+            background-color: var(--primary-blue);
+            color: white;
+            font-size: 1rem;
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menu Superior -->
+    <nav class="navbar navbar-expand-lg navbar-dark pb-5"> <!-- pb-5 cria o espaço para o container subir -->
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'aba_cadastro' %}">
+                <i class="fa-solid "></i> MONITORAMENTO HRC
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'aba_cadastro' %}"><i class="fa-solid fa-user-plus me-1"></i> Cadastro</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'aba_dados' %}"><i class="fa-solid fa-table-list me-1"></i> Base de Dados</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'aba_metricas' %}"><i class="fa-solid fa-chart-pie me-1"></i> Métricas</a>
+                    </li>
+                    <li class="nav-item ms-lg-3">
+                        <a class="btn btn-outline-light btn-sm px-3" href="{% url 'logout' %}">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Sair
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Área onde as páginas são carregadas -->
+    <div class="container container-main">
+        {% block content %}
+        {% endblock content %}
+    </div>
+
+    <!-- Script necessário para o menu responsivo (celular) do Bootstrap funcionar -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block scripts %}
+    {% endblock scripts %}
+
+</body>
+</html>

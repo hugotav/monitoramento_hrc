@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Monitoramento Oncológico HRC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0A3D62;
+            --secondary-blue: #1E6091;
+            --light-bg: #F4F7F6;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            border-top: 5px solid var(--primary-blue);
+        }
+        .login-title {
+            color: var(--primary-blue);
+            font-weight: 700;
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .form-control {
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .form-control:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(10, 61, 98, 0.15);
+        }
+        .btn-login {
+            background-color: var(--secondary-blue);
+            color: white;
+            font-weight: 600;
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+        .btn-login:hover {
+            background-color: var(--primary-blue);
+            color: white;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="text-center mb-3">
+            <i class="fa-solid fa-2x" style="color: var(--primary-blue);"></i>
+        </div>
+        <h2 class="login-title">MONITORAMENTO HRC</h2>
+        
+        {% if form.errors %}
+            <div class="alert alert-danger py-2 small text-center">
+                Usuário ou senha inválidos. Tente novamente.
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label fw-semibold small text-muted">Usuário</label>
+                <!-- Adicionando classe form-control manualmente aqui -->
+                <input type="text" name="username" class="form-control" required>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-semibold small text-muted">Senha</label>
+                <!-- Adicionando classe form-control manualmente aqui -->
+                <input type="password" name="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-login">Entrar</button>
+        </form>
+    </div>
+
+</body>
+</html>
