@@ -385,7 +385,6 @@
         }
 
         // Gatilhos de Tratamentos
-        // Aplicando a lógica de múltiplos campos (Data + Observação) para cada tratamento
         configurarGatilhoMultiplo('id_indicacao_cirurgia', ['id_data_indicacao_cirurgia', 'id_obs_indicacao_cirurgia']);
         configurarGatilhoMultiplo('id_fez_cirurgia', ['id_data_cirurgia', 'id_qual_cirurgia']);
         configurarGatilhoMultiplo('id_fez_qt', ['id_data_qt', 'id_obs_qt']);
@@ -398,20 +397,31 @@
         configurarGatilhoMultiplo('id_fez_rt_qt', ['id_data_rt_qt', 'id_obs_rt_qt']);
         configurarGatilhoMultiplo('id_fez_imunoterapia', ['id_data_imunoterapia', 'id_obs_imunoterapia']);
 
-        // Lógica do Diagnóstico
+        // Lógica do Diagnóstico (Integrada com Select2 e JS puro)
         const selectDiagnostico = document.getElementById('id_diagnostico');
         const campoDataDiagnostico = document.getElementById('id_data_diagnostico');
 
         if (selectDiagnostico && campoDataDiagnostico) {
             const toggleDiagnostico = () => {
-                const estaVazio = (selectDiagnostico.value === '');
+                const estaVazio = (selectDiagnostico.value === '' || selectDiagnostico.value === null);
                 campoDataDiagnostico.disabled = estaVazio;
                 if (estaVazio) {
                     campoDataDiagnostico.value = '';
                 }
             };
+            
+            // Executa ao carregar a página
             toggleDiagnostico();
+            
+            // Evento padrão do Django/HTML
             selectDiagnostico.addEventListener('change', toggleDiagnostico);
+            
+            // Eventos específicos do Select2 para garantir funcionamento perfeito
+            if (window.jQuery) {
+                $('#id_diagnostico').on('select2:select select2:clear', function () {
+                    toggleDiagnostico();
+                });
+            }
         }
     });
 </script>

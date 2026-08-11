@@ -14,13 +14,18 @@
 
 <!-- Barra de Pesquisa e Filtros -->
 <form method="GET" class="row g-3 mb-4 p-3 bg-light rounded border">
-    <div class="col-md-5">
-        <label class="form-label text-muted small">Pesquisar por Nome</label>
+    <div class="col-md-2">
+        <label class="form-label text-muted small fw-bold">Prontuário</label>
+        <input type="text" name="prontuario" class="form-control" placeholder="Ex: SIM-10001" value="{{ request.GET.prontuario }}">
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label text-muted small fw-bold">Nome</label>
         <input type="text" name="nome" class="form-control" placeholder="Digite o nome..." value="{{ request.GET.nome }}">
     </div>
     
-    <div class="col-md-5">
-        <label class="form-label text-muted small">Filtrar por Especialidade</label>
+    <div class="col-md-3">
+        <label class="form-label text-muted small fw-bold">Especialidade</label>
         <select name="especialidade" class="form-select">
             <option value="">Todas as Especialidades</option>
             {% for sigla, nome in especialidades %}
@@ -28,9 +33,19 @@
             {% endfor %}
         </select>
     </div>
+
+    <div class="col-md-3">
+        <label class="form-label text-muted small fw-bold">Situação</label>
+        <select name="situacao" class="form-select">
+            <option value="">Todas as Situações</option>
+            <option value="aguardando diagn" {% if request.GET.situacao == 'aguardando diagn' %}selected{% endif %}>Aguardando Diagnóstico</option>
+            <option value="aguardando tratamento" {% if request.GET.situacao == 'aguardando tratamento' %}selected{% endif %}>Aguardando Tratamento</option>
+            <option value="em tratamento" {% if request.GET.situacao == 'em tratamento' %}selected{% endif %}>Em Tratamento</option>
+        </select>
+    </div>
     
-    <div class="col-md-2 d-flex align-items-end">
-        <button type="submit" class="btn btn-azul-padrao w-100">Pesquisar</button>
+    <div class="col-md-1 d-flex align-items-end">
+        <button type="submit" class="btn btn-azul-padrao w-100" title="Pesquisar"><i class="fa-solid fa-search"></i></button>
     </div>
 </form>
 
@@ -50,7 +65,6 @@
         </thead>
         <tbody>
             {% for p in pacientes %}
-            <!-- Se o paciente estiver inativo, aplicamos uma classe CSS para deixá-lo translúcido/fim da fila -->
             <tr class="{% if not p.ativo %}table-secondary text-muted{% endif %}">
                 <td>
                     <strong>{{ p.prontuario }}</strong>
@@ -63,6 +77,7 @@
                 <td>
                     <span class="badge {% if p.ativo %}bg-secondary{% else %}bg-dark{% endif %}">{{ p.situacao }}</span>
                 </td>
+                
                 <!-- Dias p/ Diagnóstico -->
                 <td>
                     {% if p.ativo %}
@@ -92,17 +107,16 @@
                         <span class="text-muted">-</span>
                     {% endif %}
                 </td>
+
                 <!-- Botões de Ação -->
                 <td>
                     <div class="d-flex gap-1">
-                        <!-- O botão de Editar só aparece se o paciente estiver ATIVO -->
                         {% if p.ativo %}
                             <a href="{% url 'editar_paciente' p.prontuario %}" class="btn btn-sm btn-azul-padrao" title="Editar Paciente">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </a>
                         {% endif %}
                         
-                        <!-- Botão de Desativar ou Reativar (continua sempre visível) -->
                         <a href="{% url 'alternar_status_paciente' p.prontuario %}" 
                            class="btn btn-sm {% if p.ativo %}btn-outline-danger{% else %}btn-outline-success{% endif %}" 
                            title="{% if p.ativo %}Desabilitar Paciente{% else %}Reativar Paciente{% endif %}">
