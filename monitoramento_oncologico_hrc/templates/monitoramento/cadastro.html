@@ -55,34 +55,28 @@
     /* O "Pulo do Gato" para os Tratamentos (Input Group Customizado) */
     .tratamento-grupo {
         display: flex;
+        flex-direction: column;
         border-radius: 6px;
         overflow: hidden;
         border: 1px solid #d1d5db;
+        background-color: #fff;
+        padding: 10px;
     }
     .tratamento-label-box {
         background-color: var(--light-bg);
         color: var(--primary-blue);
         font-weight: 600;
         font-size: 0.85rem;
-        padding: 0.6rem 1rem;
-        width: 180px; /* Largura fixa para todas as caixas ficarem alinhadas */
+        padding: 0.4rem;
         display: flex;
         align-items: center;
-        border-right: 1px solid #d1d5db;
+        margin-bottom: 8px;
     }
     .tratamento-label-box input[type="checkbox"] {
         transform: scale(1.3);
-        margin-right: 12px;
+        margin-right: 10px;
         accent-color: var(--primary-blue);
         cursor: pointer;
-    }
-    /* Removemos a borda do input de data pois o grupo já tem borda */
-    .tratamento-grupo input[type="date"] {
-        border: none;
-        border-radius: 0;
-    }
-    .tratamento-grupo input[type="date"]:focus {
-        box-shadow: none;
     }
 
     .btn-salvar {
@@ -96,6 +90,25 @@
         background-color: var(--primary-blue);
         color: white;
         transform: translateY(-2px);
+    }
+</style>
+
+<!-- Adicione logo abaixo da sua tag <style> -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Estilização para o Select2 combinar com o seu sistema */
+    .select2-container .select2-selection--single {
+        height: 38px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background-color: #f9fafb;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px;
+        color: #333;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
     }
 </style>
 
@@ -114,14 +127,28 @@
     <div class="secao-form">
         <div class="secao-titulo"><i class="fa-solid fa-user me-2"></i> Dados Pessoais</div>
         <div class="row g-3">
-            <div class="col-md-8">
+            
+            <!-- Todos os 4 campos na mesma linha com larguras iguais (3+3+3+3 = 12) -->
+            <div class="col-md-2">
+                <label class="form-label">Prontuário</label>
+                {{ form.prontuario }}
+            </div>
+            
+            <div class="col-md-4">
                 <label class="form-label">Nome Completo</label>
                 {{ form.nome }}
             </div>
-            <div class="col-md-4">
+            
+            <div class="col-md-3">
+                <label class="form-label">Sexo</label>
+                {{ form.sexo }}
+            </div>
+            
+            <div class="col-md-3">
                 <label class="form-label">Data de Nascimento</label>
                 {{ form.data_nascimento }}
             </div>
+            
         </div>
     </div>
 
@@ -148,125 +175,188 @@
         </div>
     </div>
 
-    <!-- BLOCO 3: TRATAMENTOS -->
-    <div class="secao-form">
-        <div class="secao-titulo"><i class="fa-solid fa-syringe me-2"></i> Histórico de Tratamentos</div>
-        <div class="row g-3">
-            
-            <!-- Cirurgia -->
-            <div class="col-md-4">
-                <div class="tratamento-grupo">
-                    <div class="tratamento-label-box">
-                        {{ form.fez_cirurgia }} Cirurgia
-                    </div>
-                    {{ form.data_cirurgia }}
-                </div>
-            </div>
+    <!-- SEÇÕES DE EDIÇÃO (Aparecem apenas se o paciente já existir) -->
+    {% if form.instance.pk %}
 
-            <!-- QT -->
-            <div class="col-md-4">
-                <div class="tratamento-grupo">
-                    <div class="tratamento-label-box">
-                        {{ form.fez_qt }} Quimioterapia (QT)
-                    </div>
-                    {{ form.data_qt }}
-                </div>
-            </div>
-
-            <!-- RT -->
-            <div class="col-md-4">
-                <div class="tratamento-grupo">
-                    <div class="tratamento-label-box">
-                        {{ form.fez_rt }} Radioterapia (RT)
-                    </div>
-                    {{ form.data_rt }}
-                </div>
-            </div>
-
-            <!-- Cirurgia + RT -->
-            <div class="col-md-4">
-                <div class="tratamento-grupo">
-                    <div class="tratamento-label-box">
-                        {{ form.fez_cirurgia_rt }} Cirurgia + RT
-                    </div>
-                    {{ form.data_cirurgia_rt }}
-                </div>
-            </div>
-
-            <!-- Cirurgia + QT -->
-            <div class="col-md-4">
-                <div class="tratamento-grupo">
-                    <div class="tratamento-label-box">
-                        {{ form.fez_cirurgia_qt }} Cirurgia + QT
-                    </div>
-                    {{ form.data_cirurgia_qt }}
-                </div>
-            </div>
-
-            <!-- QT + Cirurgia -->
-            <div class="col-md-4">
-                <div class="tratamento-grupo">
-                    <div class="tratamento-label-box">
-                        {{ form.fez_qt_cirurgia }} QT + Cirurgia
-                    </div>
-                    {{ form.data_qt_cirurgia }}
-                </div>
-            </div>
-
-            <!-- RT + Cirurgia -->
-            <div class="col-md-4">
-                <div class="tratamento-grupo">
-                    <div class="tratamento-label-box">
-                        {{ form.fez_rt_cirurgia }} RT + Cirurgia
-                    </div>
-                    {{ form.data_rt_cirurgia }}
-                </div>
-            </div>
-
-            <!-- QT + RT -->
-            <div class="col-md-4">
-                <div class="tratamento-grupo">
-                    <div class="tratamento-label-box">
-                        {{ form.fez_qt_rt }} QT + RT
-                    </div>
-                    {{ form.data_qt_rt }}
-                </div>
-            </div>
-
-            <!-- RT + QT -->
-            <div class="col-md-4">
-                <div class="tratamento-grupo">
-                    <div class="tratamento-label-box">
-                        {{ form.fez_rt_qt }} RT + QT
-                    </div>
-                    {{ form.data_rt_qt }}
-                </div>
-            </div>
-
+        <!-- ========================================== -->
+        <!-- BLOCO 3: HISTÓRICO DE TRATAMENTOS         -->
+        <!-- ========================================== -->
+        <div class="secao-form mb-4">
+            <div class="secao-titulo"><i class="fa-solid fa-clock-rotate-left me-2"></i>Histórico de Tratamentos Registrados</div>
+            <ul class="list-group list-group-flush">
+                {% for tratamento in form.instance.tratamentos.all %}
+                    <li class="list-group-item">
+                        <strong>{{ tratamento.tipo_tratamento }}:</strong> {{ tratamento.data|date:"d/m/Y" }}
+                        {% if tratamento.detalhes %}
+                            - <em>({{ tratamento.detalhes }})</em>
+                        {% endif %}
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-muted">Nenhum tratamento registrado ainda.</li>
+                {% endfor %}
+            </ul>
         </div>
-    </div>
+
+        <!-- ========================================== -->
+        <!-- BLOCO 4: ATUALIZAR TRATAMENTOS             -->
+        <!-- ========================================== -->
+        <div class="secao-form mb-4">
+            <div class="secao-titulo"><i class="fa-solid fa-syringe me-2"></i>Registrar Novos Tratamentos</div>
+            <div class="row g-3">
+                
+                <!-- Indicação de Cirurgia -->
+                <div class="col-md-4">
+                    <div class="tratamento-grupo">
+                        <div class="tratamento-label-box">
+                            {{ form.indicacao_cirurgia }} Indicação de Cirurgia
+                        </div>
+                        {{ form.data_indicacao_cirurgia }}
+                        <div class="mt-2">{{ form.obs_indicacao_cirurgia }}</div>
+                    </div>
+                </div>
+
+                <!-- QT -->
+                <div class="col-md-4">
+                    <div class="tratamento-grupo">
+                        <div class="tratamento-label-box">
+                            {{ form.fez_qt }} Quimioterapia (QT)
+                        </div>
+                        {{ form.data_qt }}
+                        <div class="mt-2">{{ form.obs_qt }}</div>
+                    </div>
+                </div>
+
+                <!-- RT -->
+                <div class="col-md-4">
+                    <div class="tratamento-grupo">
+                        <div class="tratamento-label-box">
+                            {{ form.fez_rt }} Radioterapia (RT)
+                        </div>
+                        {{ form.data_rt }}
+                        <div class="mt-2">{{ form.obs_rt }}</div>
+                    </div>
+                </div>
+
+                <!-- Cirurgia + RT -->
+                <div class="col-md-4">
+                    <div class="tratamento-grupo">
+                        <div class="tratamento-label-box">
+                            {{ form.fez_cirurgia_rt }} Cirurgia + RT
+                        </div>
+                        {{ form.data_cirurgia_rt }}
+                        <div class="mt-2">{{ form.obs_cirurgia_rt }}</div>
+                    </div>
+                </div>
+
+                <!-- Cirurgia + QT -->
+                <div class="col-md-4">
+                    <div class="tratamento-grupo">
+                        <div class="tratamento-label-box">
+                            {{ form.fez_cirurgia_qt }} Cirurgia + QT
+                        </div>
+                        {{ form.data_cirurgia_qt }}
+                        <div class="mt-2">{{ form.obs_cirurgia_qt }}</div>
+                    </div>
+                </div>
+
+                <!-- QT + Cirurgia -->
+                <div class="col-md-4">
+                    <div class="tratamento-grupo">
+                        <div class="tratamento-label-box">
+                            {{ form.fez_qt_cirurgia }} QT + Cirurgia
+                        </div>
+                        {{ form.data_qt_cirurgia }}
+                        <div class="mt-2">{{ form.obs_qt_cirurgia }}</div>
+                    </div>
+                </div>
+
+                <!-- RT + Cirurgia -->
+                <div class="col-md-4">
+                    <div class="tratamento-grupo">
+                        <div class="tratamento-label-box">
+                            {{ form.fez_rt_cirurgia }} RT + Cirurgia
+                        </div>
+                        {{ form.data_rt_cirurgia }}
+                        <div class="mt-2">{{ form.obs_rt_cirurgia }}</div>
+                    </div>
+                </div>
+
+                <!-- QT + RT -->
+                <div class="col-md-4">
+                    <div class="tratamento-grupo">
+                        <div class="tratamento-label-box">
+                            {{ form.fez_qt_rt }} QT + RT
+                        </div>
+                        {{ form.data_qt_rt }}
+                        <div class="mt-2">{{ form.obs_qt_rt }}</div>
+                    </div>
+                </div>
+
+                <!-- RT + QT -->
+                <div class="col-md-4">
+                    <div class="tratamento-grupo">
+                        <div class="tratamento-label-box">
+                            {{ form.fez_rt_qt }} RT + QT
+                        </div>
+                        {{ form.data_rt_qt }}
+                        <div class="mt-2">{{ form.obs_rt_qt }}</div>
+                    </div>
+                </div>
+
+                <!-- Imunoterapia -->
+                <div class="col-md-4">
+                    <div class="tratamento-grupo">
+                        <div class="tratamento-label-box">
+                            {{ form.fez_imunoterapia }} Imunoterapia
+                        </div>
+                        {{ form.data_imunoterapia }}
+                        <div class="mt-2">{{ form.obs_imunoterapia }}</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    {% endif %}
 
     <!-- BOTÃO SALVAR -->
-    <div class="mt-2">
+    <div class="mt-4">
         <button type="submit" class="btn btn-salvar btn-lg w-100">Salvar</button>
     </div>
 </form>
 {% endblock %}
 
 {% block scripts %}
+<!-- Importação do jQuery e Select2 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
+    // Ativa o campo de diagnóstico com pesquisa
+    $(document).ready(function() {
+        $('#id_diagnostico').select2({
+            placeholder: "Selecione ou digite o CID",
+            allowClear: true,
+            width: '100%',
+            language: {
+                noResults: function() {
+                    return "Nenhum diagnóstico encontrado";
+                }
+            }
+        });
+    });
+
     document.addEventListener("DOMContentLoaded", function() {
         
-        // 1. Lógica dos Tratamentos
-        function configurarGatilho(idCheckbox, idCampoData) {
+        function configurarGatilho(idCheckbox, idCampo) {
             const checkbox = document.getElementById(idCheckbox);
-            const campoData = document.getElementById(idCampoData);
+            const campo = document.getElementById(idCampo);
             
-            if (checkbox && campoData) {
+            if (checkbox && campo) {
                 const toggleDisable = () => {
-                    campoData.disabled = !checkbox.checked;
+                    campo.disabled = !checkbox.checked;
                     if (!checkbox.checked) {
-                        campoData.value = ''; 
+                        campo.value = ''; 
                     }
                 };
                 toggleDisable(); 
@@ -274,17 +364,41 @@
             }
         }
 
-        configurarGatilho('id_fez_cirurgia', 'id_data_cirurgia');
-        configurarGatilho('id_fez_qt', 'id_data_qt');
-        configurarGatilho('id_fez_rt', 'id_data_rt');
-        configurarGatilho('id_fez_cirurgia_rt', 'id_data_cirurgia_rt');
-        configurarGatilho('id_fez_cirurgia_qt', 'id_data_cirurgia_qt');
-        configurarGatilho('id_fez_qt_cirurgia', 'id_data_qt_cirurgia');
-        configurarGatilho('id_fez_rt_cirurgia', 'id_data_rt_cirurgia');
-        configurarGatilho('id_fez_qt_rt', 'id_data_qt_rt');
-        configurarGatilho('id_fez_rt_qt', 'id_data_rt_qt');
+        function configurarGatilhoMultiplo(idCheckbox, arrayIdsCampos) {
+            const checkbox = document.getElementById(idCheckbox);
+            
+            if (checkbox) {
+                const toggleDisable = () => {
+                    arrayIdsCampos.forEach(idCampo => {
+                        const campo = document.getElementById(idCampo);
+                        if (campo) {
+                            campo.disabled = !checkbox.checked;
+                            if (!checkbox.checked) {
+                                campo.value = '';
+                            }
+                        }
+                    });
+                };
+                toggleDisable();
+                checkbox.addEventListener('change', toggleDisable);
+            }
+        }
 
-        // 2. Lógica do Diagnóstico
+        // Gatilhos de Tratamentos
+        // Aplicando a lógica de múltiplos campos (Data + Observação) para cada tratamento
+        configurarGatilhoMultiplo('id_indicacao_cirurgia', ['id_data_indicacao_cirurgia', 'id_obs_indicacao_cirurgia']);
+        configurarGatilhoMultiplo('id_fez_cirurgia', ['id_data_cirurgia', 'id_qual_cirurgia']);
+        configurarGatilhoMultiplo('id_fez_qt', ['id_data_qt', 'id_obs_qt']);
+        configurarGatilhoMultiplo('id_fez_rt', ['id_data_rt', 'id_obs_rt']);
+        configurarGatilhoMultiplo('id_fez_cirurgia_rt', ['id_data_cirurgia_rt', 'id_obs_cirurgia_rt']);
+        configurarGatilhoMultiplo('id_fez_cirurgia_qt', ['id_data_cirurgia_qt', 'id_obs_cirurgia_qt']);
+        configurarGatilhoMultiplo('id_fez_qt_cirurgia', ['id_data_qt_cirurgia', 'id_obs_qt_cirurgia']);
+        configurarGatilhoMultiplo('id_fez_rt_cirurgia', ['id_data_rt_cirurgia', 'id_obs_rt_cirurgia']);
+        configurarGatilhoMultiplo('id_fez_qt_rt', ['id_data_qt_rt', 'id_obs_qt_rt']);
+        configurarGatilhoMultiplo('id_fez_rt_qt', ['id_data_rt_qt', 'id_obs_rt_qt']);
+        configurarGatilhoMultiplo('id_fez_imunoterapia', ['id_data_imunoterapia', 'id_obs_imunoterapia']);
+
+        // Lógica do Diagnóstico
         const selectDiagnostico = document.getElementById('id_diagnostico');
         const campoDataDiagnostico = document.getElementById('id_data_diagnostico');
 

@@ -63,13 +63,12 @@
                 <td>
                     <span class="badge {% if p.ativo %}bg-secondary{% else %}bg-dark{% endif %}">{{ p.situacao }}</span>
                 </td>
-                
                 <!-- Dias p/ Diagnóstico -->
                 <td>
                     {% if p.ativo %}
-                        {% if p.dias_entrada_diagnostico <= 10 %}
+                        {% if p.dias_entrada_diagnostico <= 23 %}
                             <span class="badge bg-success">{{ p.dias_entrada_diagnostico }} dias</span>
-                        {% elif p.dias_entrada_diagnostico <= 20 %}
+                        {% elif p.dias_entrada_diagnostico <= 30 %}
                             <span class="badge bg-warning text-dark">{{ p.dias_entrada_diagnostico }} dias</span>
                         {% else %}
                             <span class="badge bg-danger">{{ p.dias_entrada_diagnostico }} dias</span>
@@ -82,9 +81,9 @@
                 <!-- Dias p/ Tratamento -->
                 <td>
                     {% if p.ativo %}
-                        {% if p.dias_diagnostico_tratamento <= 20 %}
+                        {% if p.dias_diagnostico_tratamento <= 53 %}
                             <span class="badge bg-success">{{ p.dias_diagnostico_tratamento }} dias</span>
-                        {% elif p.dias_diagnostico_tratamento <= 40 %}
+                        {% elif p.dias_diagnostico_tratamento <= 60 %}
                             <span class="badge bg-warning text-dark">{{ p.dias_diagnostico_tratamento }} dias</span>
                         {% else %}
                             <span class="badge bg-danger">{{ p.dias_diagnostico_tratamento }} dias</span>
