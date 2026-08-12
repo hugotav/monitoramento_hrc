@@ -342,7 +342,7 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-    // Ativa o campo de diagnóstico com pesquisa
+    // Ativa o campo de diagnóstico com pesquisa do Select2
     $(document).ready(function() {
         $('#id_diagnostico').select2({
             placeholder: "Selecione ou digite o CID",
@@ -357,7 +357,23 @@
     });
 
     document.addEventListener("DOMContentLoaded", function() {
+
+        // -------------------------------------------------------------
+        // REGRA 1: MENSAGENS PERSONALIZADAS DE CAMPO OBRIGATÓRIO
+        // -------------------------------------------------------------
+        const inputsObrigatorios = document.querySelectorAll('input[required], select[required]');
+        inputsObrigatorios.forEach(input => {
+            input.addEventListener('invalid', function(e) {
+                e.preventDefault(); // Evita a mensagem padrão do navegador
+                const nomeDoCampo = this.previousElementSibling.innerText;
+                alert(`O campo "${nomeDoCampo}" é obrigatório para o cadastro!`);
+                this.focus();
+            });
+        });
         
+        // -------------------------------------------------------------
+        // GATILHOS DOS CAMPOS DE TRATAMENTO
+        // -------------------------------------------------------------
         function configurarGatilhoMultiplo(idCheckbox, arrayIdsCampos) {
             const checkbox = document.getElementById(idCheckbox);
             
@@ -378,9 +394,9 @@
             }
         }
 
-        // Gatilhos de Tratamentos
+        // Aplicação dos gatilhos para cada tratamento
         configurarGatilhoMultiplo('id_indicacao_cirurgia', ['id_data_indicacao_cirurgia', 'id_obs_indicacao_cirurgia']);
-        configurarGatilhoMultiplo('id_fez_cirurgia', ['id_data_cirurgia', 'id_qual_cirurgia']); // O gatilho da cirurgia já estava correto!
+        configurarGatilhoMultiplo('id_fez_cirurgia', ['id_data_cirurgia', 'id_qual_cirurgia']); 
         configurarGatilhoMultiplo('id_fez_qt', ['id_data_qt', 'id_obs_qt']);
         configurarGatilhoMultiplo('id_fez_rt', ['id_data_rt', 'id_obs_rt']);
         configurarGatilhoMultiplo('id_fez_cirurgia_rt', ['id_data_cirurgia_rt', 'id_obs_cirurgia_rt']);
@@ -391,32 +407,62 @@
         configurarGatilhoMultiplo('id_fez_rt_qt', ['id_data_rt_qt', 'id_obs_rt_qt']);
         configurarGatilhoMultiplo('id_fez_imunoterapia', ['id_data_imunoterapia', 'id_obs_imunoterapia']);
 
-        // Lógica do Diagnóstico (Integrada com Select2 e JS puro)
+        // -------------------------------------------------------------
+        // REGRA 2: DEPENDÊNCIA (Especialidade -> Diagnóstico -> Tratamento)
+        // -------------------------------------------------------------
+        const selectEspecialidade = document.getElementById('id_especialidade');
         const selectDiagnostico = document.getElementById('id_diagnostico');
         const campoDataDiagnostico = document.getElementById('id_data_diagnostico');
-
-        if (selectDiagnostico && campoDataDiagnostico) {
-            const toggleDiagnostico = () => {
-                const estaVazio = (selectDiagnostico.value === '' || selectDiagnostico.value === null);
-                campoDataDiagnostico.disabled = estaVazio;
-                if (estaVazio) {
-                    campoDataDiagnostico.value = '';
+        
+        function verificarCascata() {
+            // 1. Especialidade habilita Diagnóstico
+            if (selectEspecialidade && selectDiagnostico) {
+                const espVazia = (selectEspecialidade.value === '');
+                selectDiagnostico.disabled = espVazia;
+                if (espVazia) {
+                    $(selectDiagnostico).val(null).trigger('change.select2'); // Limpa o campo CID via Select2
                 }
-            };
-            
-            // Executa ao carregar a página
-            toggleDiagnostico();
-            
-            // Evento padrão do Django/HTML
-            selectDiagnostico.addEventListener('change', toggleDiagnostico);
-            
-            // Eventos específicos do Select2 para garantir funcionamento perfeito
-            if (window.jQuery) {
-                $('#id_diagnostico').on('select2:select select2:clear', function () {
-                    toggleDiagnostico();
+            }
+
+            // 2. Diagnóstico habilita Data do Diagnóstico e os Blocos de Tratamentos
+            if (selectDiagnostico) {
+                const diagVazio = (selectDiagnostico.value === '' || selectDiagnostico.value === null);
+                
+                // Trata a Data do Diagnóstico (Apenas se o campo não estiver bloqueado/readonly via Python)
+                if (campoDataDiagnostico && !campoDataDiagnostico.readOnly) {
+                    campoDataDiagnostico.disabled = diagVazio;
+                    if (diagVazio) campoDataDiagnostico.value = '';
+                }
+
+                // Trata os checkboxes de Tratamento (Bloqueia e desmarca todos se não tiver diagnóstico)
+                const checkboxesTratamento = document.querySelectorAll('.tratamento-label-box input[type="checkbox"]');
+                checkboxesTratamento.forEach(cb => {
+                    cb.disabled = diagVazio;
+                    if (diagVazio && cb.checked) {
+                        cb.checked = false;
+                        cb.dispatchEvent(new Event('change')); // Aciona a limpeza dos campos de data dependentes
+                    }
                 });
             }
         }
+
+        // Adiciona os "ouvintes" para reagir quando os campos forem alterados
+        if (selectEspecialidade) {
+            selectEspecialidade.addEventListener('change', verificarCascata);
+        }
+        
+        if (selectDiagnostico) {
+            selectDiagnostico.addEventListener('change', verificarCascata);
+            // Captura o evento específico do Select2 (já que ele cria uma camada de interface em cima do select real)
+            if (window.jQuery) {
+                $('#id_diagnostico').on('select2:select select2:clear', function () {
+                    verificarCascata();
+                });
+            }
+        }
+        
+        // Executa a primeira verificação ao carregar a página (importante para edições)
+        verificarCascata();
     });
 </script>
 {% endblock %}

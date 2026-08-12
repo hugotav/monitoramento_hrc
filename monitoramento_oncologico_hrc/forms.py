@@ -73,12 +73,38 @@ class PacienteForm(forms.ModelForm):
                     opcao for opcao in campo.choices if opcao[0] != ''
                 ]
             
-            # Garante formato HTML5 para qualquer campo de data remanescente
             if isinstance(campo, forms.DateField):
                 campo.widget = forms.DateInput(
                     format='%Y-%m-%d', 
                     attrs={'type': 'date', 'class': 'form-control'}
                 )
+
+        # ==========================================
+        # REGRAS DE NEGÓCIO 1 E 2
+        # ==========================================
+        
+        # A) Campos obrigatórios no primeiro cadastro
+        obrigatorios = ['prontuario', 'nome', 'sexo', 'data_nascimento', 'data_entrada']
+        for campo in obrigatorios:
+            self.fields[campo].required = True
+            # Adiciona o atributo required no HTML para o navegador validar
+            self.fields[campo].widget.attrs['required'] = 'required'
+
+        # B) Campos NÃO obrigatórios inicialmente
+        nao_obrigatorios = ['especialidade', 'diagnostico', 'data_diagnostico']
+        for campo in nao_obrigatorios:
+            self.fields[campo].required = False
+
+        # C) Bloqueios (Read-only) caso o paciente já exista
+        if self.instance.pk:
+            # Não é possível editar a data de entrada
+            self.fields['data_entrada'].widget.attrs['readonly'] = True
+            self.fields['data_entrada'].widget.attrs['style'] = 'background-color: #e2e8f0; pointer-events: none;'
+            
+            # Não é possível editar o diagnóstico caso já esteja preenchido
+            if self.instance.data_diagnostico:
+                self.fields['data_diagnostico'].widget.attrs['readonly'] = True
+                self.fields['data_diagnostico'].widget.attrs['style'] = 'background-color: #e2e8f0; pointer-events: none;'
 
         # 2. OCULTAR BLOCO DE TRATAMENTOS NO PRIMEIRO CADASTRO
         if not self.instance.pk:

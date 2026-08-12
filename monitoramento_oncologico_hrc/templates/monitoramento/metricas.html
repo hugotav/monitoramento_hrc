@@ -111,121 +111,148 @@
 </div>
 
 <!-- ========================================== -->
-<!-- 1. BARRA DE FILTROS                        -->
+<!-- LINHA 1: TOTAL DE PACIENTES + FILTROS      -->
 <!-- ========================================== -->
-<div class="filtro-box">
-    <form method="GET" class="row g-3 align-items-end">
-        <div class="col-md-3">
-            <label class="form-label small fw-bold text-muted">Data Inicial</label>
-            <input type="date" name="data_inicio" class="form-control" value="{{ request.GET.data_inicio }}">
-        </div>
-        <div class="col-md-3">
-            <label class="form-label small fw-bold text-muted">Data Final</label>
-            <input type="date" name="data_fim" class="form-control" value="{{ request.GET.data_fim }}">
-        </div>
-        <div class="col-md-4">
-            <label class="form-label small fw-bold text-muted">Especialidade</label>
-            <select name="especialidade" class="form-select">
-                <option value="">Todas as Especialidades</option>
-                {% for valor, rotulo in especialidades_opcoes %}
-                    <option value="{{ valor }}" {% if request.GET.especialidade == valor %}selected{% endif %}>{{ rotulo }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-2 d-flex">
-            <button type="submit" class="btn w-100 me-2 text-white" style="background-color: var(--cor-azul-base); border: none;"><i class="fa-solid fa-filter me-1"></i> Filtrar</button>
-            <a href="{% url 'aba_metricas' %}" class="btn btn-outline-secondary"><i class="fa-solid fa-eraser"></i></a>
-        </div>
-    </form>
-</div>
-
-<!-- ========================================== -->
-<!-- 2. CARDS DE RESUMO (5 NA MESMA LINHA)      -->
-<!-- ========================================== -->
-<div class="row g-2 mb-4">
-    <div class="col">
-        <div class="kpi-card success">
-            <div class="kpi-titulo">Total Pacientes</div>
-            <div class="kpi-valor">{{ total_pacientes }}</div>
-            <div class="kpi-sub">No período</div>
+<div class="row mb-4 align-items-stretch">
+    <!-- Card Total (Lado Esquerdo) -->
+    <div class="col-md-3">
+        <div class="kpi-card text-center d-flex justify-content-center align-items-center h-100" style="border-left-color: var(--cor-azul-base);">
+            <div>
+                <div class="kpi-titulo">Total de Pacientes</div>
+                <div class="kpi-valor" style="font-size: 2.5rem; color: var(--cor-azul-base);">{{ total_pacientes }}</div>
+            </div>
         </div>
     </div>
     
-    <div class="col">
-        <div class="kpi-card warning">
-            <div class="kpi-titulo">Méd: Acesso>Diag</div>
-            <div class="kpi-valor">{{ medias_jornada.acesso_diag }} <span style="font-size: 0.8rem; font-weight: normal;">dias</span></div>
-            <div class="kpi-sub">Meta: até 30d</div>
-        </div>
-    </div>
-
-    <div class="col">
-        <div class="kpi-card danger">
-            <div class="kpi-titulo">Atraso Méd: Diag</div>
-            <div class="kpi-valor">{{ medias_atraso.diag_geral }} <span style="font-size: 0.8rem; font-weight: normal;">dias</span></div>
-            <div class="kpi-sub">Excedente a 30d</div>
-        </div>
-    </div>
-
-    <div class="col">
-        <div class="kpi-card warning">
-            <div class="kpi-titulo">Méd: Diag>Trat</div>
-            <div class="kpi-valor">{{ medias_jornada.diag_trat }} <span style="font-size: 0.8rem; font-weight: normal;">dias</span></div>
-            <div class="kpi-sub">Meta: até 60d</div>
-        </div>
-    </div>
-
-    <div class="col">
-        <div class="kpi-card danger">
-            <div class="kpi-titulo">Atraso Méd: Trat</div>
-            <div class="kpi-valor">{{ medias_atraso.trat_geral }} <span style="font-size: 0.8rem; font-weight: normal;">dias</span></div>
-            <div class="kpi-sub">Excedente a 60d</div>
+    <!-- Filtros (Lado Direito) -->
+    <div class="col-md-9">
+        <div class="filtro-box h-100 mb-0 d-flex flex-column justify-content-center">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">Data Inicial</label>
+                    <input type="date" name="data_inicio" class="form-control" value="{{ request.GET.data_inicio }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">Data Final</label>
+                    <input type="date" name="data_fim" class="form-control" value="{{ request.GET.data_fim }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold text-muted">Especialidade</label>
+                    <select name="especialidade" class="form-select">
+                        <option value="">Todas as Especialidades</option>
+                        {% for valor, rotulo in especialidades_opcoes %}
+                            <option value="{{ valor }}" {% if request.GET.especialidade == valor %}selected{% endif %}>{{ rotulo }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex">
+                    <button type="submit" class="btn w-100 me-2 text-white" style="background-color: var(--cor-azul-base); border: none;"><i class="fa-solid fa-filter me-1"></i> Filtrar</button>
+                    <a href="{% url 'aba_metricas' %}" class="btn btn-outline-secondary"><i class="fa-solid fa-eraser"></i></a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <!-- ========================================== -->
-<!-- 3. ÁREA DE GRÁFICOS                        -->
+<!-- CARDS DE MÉDIAS DE TEMPO (3 EM CADA LINHA) -->
 <!-- ========================================== -->
 
-<div class="row g-3">
-    <div class="col-md-8">
-        <div class="chart-container">
-            <div class="chart-title">Volume por Diagnóstico (CID)</div>
-            <div class="chart-canvas-wrapper"><canvas id="chartVolCid"></canvas></div>
+<!-- Linha de Médias de Diagnóstico -->
+<div class="row g-3 mb-3">
+    <div class="col-md-4">
+        <div class="kpi-card text-white" style="background-color: var(--cor-azul-base); border: none;">
+            <div class="kpi-titulo text-white-50">Média Geral: Diagnóstico</div>
+            <div class="kpi-valor text-white">{{ medias_diag.geral }} <span class="fs-6 fw-normal">dias</span></div>
+            <div class="kpi-sub text-white-50">Todos os pacientes</div>
         </div>
     </div>
     <div class="col-md-4">
+        <div class="kpi-card success">
+            <div class="kpi-titulo">Média: Diag. no Prazo</div>
+            <div class="kpi-valor">{{ medias_diag.no_prazo }} <span class="fs-6 fw-normal">dias</span></div>
+            <div class="kpi-sub">Dentro da meta (≤ 30d)</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card danger">
+            <div class="kpi-titulo">Média: Diag. Atrasado</div>
+            <div class="kpi-valor">{{ medias_diag.atrasado }} <span class="fs-6 fw-normal">dias</span></div>
+            <div class="kpi-sub">Média total para os fora da meta</div>
+        </div>
+    </div>
+</div>
+
+<!-- Linha de Médias de Tratamento -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="kpi-card text-white" style="background-color: var(--cor-azul-base); border: none;">
+            <div class="kpi-titulo text-white-50">Média Geral: Tratamento</div>
+            <div class="kpi-valor text-white">{{ medias_trat.geral }} <span class="fs-6 fw-normal">dias</span></div>
+            <div class="kpi-sub text-white-50">Todos os pacientes</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card success">
+            <div class="kpi-titulo">Média: Trat. no Prazo</div>
+            <div class="kpi-valor">{{ medias_trat.no_prazo }} <span class="fs-6 fw-normal">dias</span></div>
+            <div class="kpi-sub">Dentro da meta (≤ 60d)</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card danger">
+            <div class="kpi-titulo">Média: Trat. Atrasado</div>
+            <div class="kpi-valor">{{ medias_trat.atrasado }} <span class="fs-6 fw-normal">dias</span></div>
+            <div class="kpi-sub">Média total para os fora da meta</div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- ÁREA DE GRÁFICOS (NOVA ORDEM)              -->
+<!-- ========================================== -->
+
+<!-- LINHA 1: Apenas os dois gráficos de Status (SLA) -->
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
         <div class="chart-container">
-            <div class="chart-title">Status: Acesso ao Diagnóstico (SLA)</div>
+            <div class="chart-title">Acesso ao Diagnóstico</div>
             <div class="chart-canvas-wrapper"><canvas id="chartStatusDiag"></canvas></div>
         </div>
     </div>
-</div>
-
-<div class="row g-3">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="chart-container">
-            <div class="chart-title">Status: Acesso ao Tratamento (SLA)</div>
+            <div class="chart-title">Acesso ao Tratamento</div>
             <div class="chart-canvas-wrapper"><canvas id="chartStatusTrat"></canvas></div>
         </div>
     </div>
-    <div class="col-md-8">
+</div>
+
+<!-- LINHA 2: Distribuição Etária Geral | Proporção por Sexo -->
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
         <div class="chart-container">
             <div class="chart-title">Distribuição Etária Geral</div>
             <div class="chart-canvas-wrapper"><canvas id="chartIdade"></canvas></div>
         </div>
     </div>
-</div>
-
-<div class="row g-3">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="chart-container">
             <div class="chart-title">Proporção por Sexo</div>
             <div class="chart-canvas-wrapper"><canvas id="chartSexo"></canvas></div>
         </div>
     </div>
-    <div class="col-md-8">
+</div>
+
+<!-- LINHA 3: Volume por Diagnóstico (CID) | Volume de Tratamentos Executados -->
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="chart-container">
+            <div class="chart-title">Volume por Diagnóstico (CID)</div>
+            <div class="chart-canvas-wrapper"><canvas id="chartVolCid"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-6">
         <div class="chart-container">
             <div class="chart-title">Volume de Tratamentos Executados</div>
             <div class="chart-canvas-wrapper"><canvas id="chartVolTrat"></canvas></div>
@@ -233,23 +260,24 @@
     </div>
 </div>
 
-<div class="row g-3">
+<!-- LINHA 4: Gargalos (Diagnóstico e Tratamento por Especialidade) -->
+<div class="row g-3 mb-3">
     <div class="col-md-6">
         <div class="chart-container">
-            <div class="chart-title">Gargalo: Atraso Diagnóstico por Especialidade (Dias)</div>
+            <div class="chart-title">Atraso Diagnóstico por Especialidade (Dias)</div>
             <div class="chart-canvas-wrapper"><canvas id="chartAtrasoDiagEsp"></canvas></div>
         </div>
     </div>
     <div class="col-md-6">
         <div class="chart-container">
-            <div class="chart-title">Gargalo: Atraso Tratamento por Especialidade (Dias)</div>
+            <div class="chart-title">Atraso Tratamento por Especialidade (Dias)</div>
             <div class="chart-canvas-wrapper"><canvas id="chartAtrasoTratEsp"></canvas></div>
         </div>
     </div>
 </div>
 
 <!-- ========================================== -->
-<!-- 4. MATRIZ ESPECIALIDADE X TRATAMENTO       -->
+<!-- MATRIZ ESPECIALIDADE X TRATAMENTO          -->
 <!-- ========================================== -->
 <div class="filtro-box mt-2">
     <div class="chart-title text-start mb-3"><i class="fa-solid fa-table me-2" style="color: var(--cor-azul-base);"></i> Matriz de Produção: Especialidade x Tratamento</div>
@@ -322,28 +350,6 @@
             return { beginAtZero: true, suggestedMax: maxVal > 0 ? maxVal * 1.2 : 5 };
         };
 
-        // 1. Gráfico: Volume por CID
-        const dataVolCid = {{ g_vol_cid|safe }};
-        new Chart(document.getElementById('chartVolCid'), {
-            type: 'bar',
-            data: {
-                labels: dataVolCid.labels,
-                datasets: [{
-                    label: 'Qtd de Pacientes',
-                    data: dataVolCid.dados,
-                    backgroundColor: '#0a3d62', 
-                    borderRadius: 6
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { legend: { display: false } }, 
-                scales: { y: escalaYComMargem({data: {datasets: [{data: dataVolCid.dados}]}}) } 
-            },
-            plugins: [pluginValoresBarras]
-        });
-
         const criarGraficoRosca = (elementId, dadosValores, labelsTexto, cores) => {
             const total = dadosValores.reduce((a, b) => a + b, 0);
             return new Chart(document.getElementById(elementId), {
@@ -398,15 +404,15 @@
             });
         };
 
-        // 2 & 3. Status SLA
+        // 1 & 2. Status SLA
         criarGraficoRosca('chartStatusDiag', [{{ diag_no_prazo }}, {{ diag_fora_prazo }}], ['No Prazo', 'Atrasado'], coresSLA);
         criarGraficoRosca('chartStatusTrat', [{{ trat_no_prazo }}, {{ trat_fora_prazo }}], ['No Prazo', 'Atrasado'], coresSLA);
 
-        // 4. Sexo
+        // 3. Proporção por Sexo
         const dataSexo = {{ g_cid_sexo|safe }};
         criarGraficoRosca('chartSexo', dataSexo.dados, dataSexo.labels, coresSexo);
 
-        // 5. Distribuição Etária
+        // 4. Distribuição Etária
         const dataIdade = {{ g_cid_idade|safe }};
         new Chart(document.getElementById('chartIdade'), {
             type: 'bar',
@@ -424,6 +430,28 @@
                 maintainAspectRatio: false, 
                 plugins: { legend: { display: false } }, 
                 scales: { y: escalaYComMargem({data: {datasets: [{data: dataIdade.dados}]}}) } 
+            },
+            plugins: [pluginValoresBarras]
+        });
+
+        // 5. Volume por CID
+        const dataVolCid = {{ g_vol_cid|safe }};
+        new Chart(document.getElementById('chartVolCid'), {
+            type: 'bar',
+            data: {
+                labels: dataVolCid.labels,
+                datasets: [{
+                    label: 'Qtd de Pacientes',
+                    data: dataVolCid.dados,
+                    backgroundColor: '#0a3d62', 
+                    borderRadius: 6
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                scales: { y: escalaYComMargem({data: {datasets: [{data: dataVolCid.dados}]}}) } 
             },
             plugins: [pluginValoresBarras]
         });
@@ -472,7 +500,7 @@
             plugins: [pluginValoresBarras]
         });
 
-        // 8. Gargalo de Atraso em Tratamento por Especialidade (Corrigido para g_atraso_trat_esp)
+        // 8. Gargalo de Atraso em Tratamento por Especialidade
         const dataAtrasoTratEsp = {{ g_atraso_trat_esp|safe }};
         new Chart(document.getElementById('chartAtrasoTratEsp'), {
             type: 'bar',

@@ -97,29 +97,45 @@
 <body>
 
     <!-- Menu Superior -->
-    <nav class="navbar navbar-expand-lg navbar-dark pb-5"> <!-- pb-5 cria o espaço para o container subir -->
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'aba_cadastro' %}">
-                <i class="fa-solid "></i> MONITORAMENTO ONCOLÓGICO HRC
+    <nav class="navbar navbar-expand-xl navbar-dark pb-5"> <!-- Expand-xl para evitar amassar em notebooks -->
+        <div class="container-fluid px-lg-5"> <!-- container-fluid usa a largura total da tela -->
+            
+            <!-- TÍTULO DO SISTEMA -->
+            <a class="navbar-brand fw-bold text-nowrap" style="font-size: 1.15rem;" href="{% url 'aba_cadastro' %}">
+                <i class="fa-solid me-2"></i> MONITORAMENTO ONCOLÓGICO HRC
             </a>
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
+                <ul class="navbar-nav ms-auto align-items-xl-center">
+                    
+                    <!-- LINKS DO MENU -->
+                    <li class="nav-item text-nowrap">
                         <a class="nav-link" href="{% url 'aba_cadastro' %}"><i class="fa-solid fa-user-plus me-1"></i> Cadastro</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item text-nowrap">
                         <a class="nav-link" href="{% url 'aba_dados' %}"><i class="fa-solid fa-table-list me-1"></i> Base de Dados</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item text-nowrap">
                         <a class="nav-link" href="{% url 'aba_metricas' %}"><i class="fa-solid fa-chart-pie me-1"></i> Métricas</a>
                     </li>
-                    <li class="nav-item ms-lg-3">
-                        <a class="btn btn-outline-light btn-sm px-3" href="{% url 'logout' %}">
+                    
+                    <!-- ÁREA DO USUÁRIO LOGADO + BOTÃO SAIR -->
+                    <li class="nav-item d-flex align-items-center mt-3 mt-xl-0 ms-xl-4 ps-xl-4 border-start border-secondary">
+                        
+                        <!-- Ícone e Nome do Usuário -->
+                        <div class="text-white me-3 text-nowrap" style="font-size: 0.9rem; opacity: 0.9;">
+                            <i class="fa-solid fa-circle-user me-1"></i> {{ request.user.get_full_name|default:request.user.username }}
+                        </div>
+                        
+                        <!-- Botão Sair -->
+                        <a class="btn btn-outline-light btn-sm px-3 text-nowrap" href="{% url 'logout' %}">
                             <i class="fa-solid fa-right-from-bracket me-1"></i> Sair
                         </a>
+                        
                     </li>
                 </ul>
             </div>
