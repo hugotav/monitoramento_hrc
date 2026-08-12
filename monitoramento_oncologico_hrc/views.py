@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Paciente, HistoricoTratamento
-from .forms import PacienteForm
-import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from datetime import datetime, date
+import json
+
+from .models import Paciente, HistoricoTratamento
+from .forms import PacienteForm
+
 
 @login_required(login_url='login')
 def aba_cadastro(request):
@@ -53,6 +55,7 @@ def aba_cadastro(request):
     
     return render(request, 'monitoramento/cadastro.html', {'form': form})
 
+
 @login_required(login_url='login')
 def aba_dados(request):
     pacientes = Paciente.objects.all().order_by('-ativo')
@@ -83,6 +86,7 @@ def aba_dados(request):
         'especialidades': Paciente.ESPECIALIDADES
     }
     return render(request, 'monitoramento/dados.html', context)
+
 
 @login_required(login_url='login')
 def aba_metricas(request):
@@ -258,6 +262,7 @@ def aba_metricas(request):
     }
     return render(request, 'monitoramento/metricas.html', context)
 
+
 @login_required(login_url='login')
 def editar_paciente(request, prontuario):
     paciente = get_object_or_404(Paciente, prontuario=prontuario)
@@ -308,6 +313,7 @@ def editar_paciente(request, prontuario):
     
     return render(request, 'monitoramento/cadastro.html', {'form': form, 'editando': True, 'paciente': paciente})
 
+
 def tela_login(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
@@ -319,9 +325,11 @@ def tela_login(request):
         form = AuthenticationForm()
     return render(request, 'monitoramento/login.html', {'form': form})
 
+
 def fazer_logout(request):
     logout(request)
     return redirect('login')
+
 
 def alternar_status_paciente(request, prontuario):
     paciente = get_object_or_404(Paciente, prontuario=prontuario)
@@ -331,3 +339,10 @@ def alternar_status_paciente(request, prontuario):
     status_texto = "ativado" if paciente.ativo else "desabilitado"
     messages.success(request, f'Paciente {paciente.nome} foi {status_texto} com sucesso!')
     return redirect('aba_dados')
+
+
+@login_required(login_url='login')
+def excluir_paciente(request, prontuario):
+    paciente = get_object_or_404(Paciente, prontuario=prontuario)
+    paciente.delete()
+    return redirect('aba_dados') # Redireciona de volta para a aba da base de dados

@@ -9,4 +9,5 @@ urlpatterns = [
     path('metricas/', views.aba_metricas, name='aba_metricas'),
     path('editar/<str:prontuario>/', views.editar_paciente, name='editar_paciente'), 
     path('status/<str:prontuario>/', views.alternar_status_paciente, name='alternar_status_paciente'),
+    path('excluir-paciente/<str:prontuario>/', views.excluir_paciente, name='excluir_paciente'),
 ]

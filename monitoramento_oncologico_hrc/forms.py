@@ -97,14 +97,9 @@ class PacienteForm(forms.ModelForm):
 
         # C) Bloqueios (Read-only) caso o paciente já exista
         if self.instance.pk:
-            # Não é possível editar a data de entrada
-            self.fields['data_entrada'].widget.attrs['readonly'] = True
-            self.fields['data_entrada'].widget.attrs['style'] = 'background-color: #e2e8f0; pointer-events: none;'
-            
-            # Não é possível editar o diagnóstico caso já esteja preenchido
-            if self.instance.data_diagnostico:
-                self.fields['data_diagnostico'].widget.attrs['readonly'] = True
-                self.fields['data_diagnostico'].widget.attrs['style'] = 'background-color: #e2e8f0; pointer-events: none;'
+            # Impede a edição do número do Prontuário para não duplicar o cadastro no banco
+            self.fields['prontuario'].widget.attrs['readonly'] = True
+            self.fields['prontuario'].widget.attrs['style'] = 'background-color: #e2e8f0; pointer-events: none;'
 
         # 2. OCULTAR BLOCO DE TRATAMENTOS NO PRIMEIRO CADASTRO
         if not self.instance.pk:
@@ -125,3 +120,48 @@ class PacienteForm(forms.ModelForm):
             for campo in campos_tratamento:
                 if campo in self.fields:
                     self.fields.pop(campo)
+
+    # ==========================================
+    # VALIDAÇÃO REFINADA DE DATAS
+    # ==========================================
+    def clean(self):
+        cleaned_data = super().clean()
+        data_entrada = cleaned_data.get('data_entrada')
+        data_diagnostico = cleaned_data.get('data_diagnostico')
+
+        # 1. Validação de Entrada x Diagnóstico
+        if data_entrada and data_diagnostico:
+            if data_diagnostico < data_entrada:
+                self.add_error('data_diagnostico', "A data do diagnóstico não pode ser anterior à data de entrada no hospital.")
+
+        # 2. Validação dos Tratamentos Inseridos Agora
+        campos_datas_tratamento = [
+            'data_cirurgia', 'data_qt', 'data_rt', 'data_cirurgia_rt',
+            'data_cirurgia_qt', 'data_qt_cirurgia', 'data_rt_cirurgia',
+            'data_qt_rt', 'data_rt_qt', 'data_imunoterapia'
+        ]
+
+        # Descobre qual foi a data do último tratamento registrado na base (se houver)
+        ultimo_tratamento_banco = None
+        if self.instance.pk:
+            ultimo_trat_obj = self.instance.tratamentos.order_by('-data').first()
+            if ultimo_trat_obj:
+                ultimo_tratamento_banco = ultimo_trat_obj.data
+
+        # Faz o pente fino em todos os campos de data de tratamento preenchidos
+        for campo in campos_datas_tratamento:
+            data_trat = cleaned_data.get(campo)
+            if data_trat:
+                # Regra: Tratamento > Entrada
+                if data_entrada and data_trat < data_entrada:
+                    self.add_error(campo, "O tratamento não pode ser anterior à data de entrada.")
+                
+                # Regra: Tratamento > Diagnóstico
+                if data_diagnostico and data_trat < data_diagnostico:
+                    self.add_error(campo, "O tratamento não pode ser anterior à data do diagnóstico.")
+                
+                # Regra: Tratamento > Último tratamento existente
+                if ultimo_tratamento_banco and data_trat < ultimo_tratamento_banco:
+                    self.add_error(campo, f"A data deste tratamento não pode ser anterior ao último tratamento já registrado ({ultimo_tratamento_banco.strftime('%d/%m/%Y')}).")
+
+        return cleaned_data

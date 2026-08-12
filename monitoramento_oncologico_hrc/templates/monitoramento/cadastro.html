@@ -2,6 +2,13 @@
 
 {% block content %}
 <style>
+    /* Estilo para quando o campo obrigatório não for preenchido */
+    .campo-invalido {
+        border-color: var(--cor-vermelho) !important;
+        background-color: #fff5f5 !important;
+        box-shadow: 0 0 0 3px rgba(139, 38, 38, 0.15) !important;
+    }
+
     /* Estilos gerais para os inputs */
     input[type="text"], input[type="date"], select {
         width: 100%; 
@@ -122,6 +129,23 @@
 
 <form method="POST">
     {% csrf_token %}
+
+    <!-- EXIBIÇÃO DE ERROS DE VALIDAÇÃO DE DATAS -->
+    {% if form.errors %}
+    <div class="alert alert-danger mb-4">
+        <strong>Atenção:</strong> Corrija os erros abaixo antes de salvar:
+        <ul class="mb-0 mt-2">
+            {% for campo in form %}
+                {% for erro in campo.errors %}
+                    <li><strong>{{ campo.label }}:</strong> {{ erro|striptags }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for erro in form.non_field_errors %}
+                <li>{{ erro|striptags }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
     
     <!-- BLOCO 1: DADOS PESSOAIS -->
     <div class="secao-form">
@@ -329,10 +353,26 @@
 
     {% endif %}
 
-    <!-- BOTÃO SALVAR -->
-    <div class="mt-4">
-        <button type="submit" class="btn btn-salvar btn-lg w-100">Salvar</button>
+    <!-- BOTÕES CENTRALIZADOS E COM MESMO TAMANHO -->
+    <div class="mt-5 mb-5 d-flex justify-content-center align-items-center gap-4">
+        
+        <!-- Botão Salvar -->
+        <button type="submit" class="btn btn-salvar d-flex justify-content-center align-items-center"
+                style="width: 220px; height: 48px; font-weight: 600;">
+            <i class="fa-solid fa-check me-2"></i> Salvar
+        </button>
+        {% if form.instance.pk %}
+            <!-- Botão de Excluir -->
+            <a href="{% url 'excluir_paciente' form.instance.prontuario %}" 
+               class="btn btn-outline-danger d-flex justify-content-center align-items-center"
+               style="width: 220px; height: 48px; font-weight: 600;"
+               onclick="return confirm('ATENÇÃO: Tem certeza que deseja apagar o paciente {{ form.instance.nome }}? Esta ação excluirá todos os tratamentos associados e não poderá ser desfeita.');">
+                <i class="fa-solid fa-trash me-2"></i> Excluir
+            </a>
+        {% endif %}       
+        
     </div>
+</form>
 </form>
 {% endblock %}
 
@@ -359,16 +399,42 @@
     document.addEventListener("DOMContentLoaded", function() {
 
         // -------------------------------------------------------------
-        // REGRA 1: MENSAGENS PERSONALIZADAS DE CAMPO OBRIGATÓRIO
+        // REGRA 1: VALIDAÇÃO VISUAL (Borda Vermelha sem Alertas)
         // -------------------------------------------------------------
+        const form = document.querySelector('form');
         const inputsObrigatorios = document.querySelectorAll('input[required], select[required]');
+        
         inputsObrigatorios.forEach(input => {
+            // Quando o formulário tenta salvar e o campo está vazio
             input.addEventListener('invalid', function(e) {
-                e.preventDefault(); // Evita a mensagem padrão do navegador
-                const nomeDoCampo = this.previousElementSibling.innerText;
-                alert(`O campo "${nomeDoCampo}" é obrigatório para o cadastro!`);
-                this.focus();
+                e.preventDefault(); // Impede a mensagem/balãozinho padrão do navegador
+                
+                // Pinta o campo de vermelho
+                this.classList.add('campo-invalido');
+                
+                // Verifica se este é o primeiro campo inválido na tela e foca nele
+                const primeiroInvalido = document.querySelector('.campo-invalido');
+                if (primeiroInvalido === this) {
+                    this.focus();
+                }
             });
+
+            // Quando o usuário começar a digitar ou selecionar, remove o vermelho na mesma hora
+            input.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    this.classList.remove('campo-invalido');
+                }
+            });
+            input.addEventListener('change', function() {
+                if (this.value.trim() !== '') {
+                    this.classList.remove('campo-invalido');
+                }
+            });
+        });
+
+        // Limpa todas as marcações vermelhas se o formulário for enviado novamente
+        form.addEventListener('submit', function() {
+            inputsObrigatorios.forEach(input => input.classList.remove('campo-invalido'));
         });
         
         // -------------------------------------------------------------
