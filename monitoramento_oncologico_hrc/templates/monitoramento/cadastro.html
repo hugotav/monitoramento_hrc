@@ -61,6 +61,7 @@
         border: 1px solid #d1d5db;
         background-color: #fff;
         padding: 10px;
+        height: 100%; /* Mantém os cards do mesmo tamanho */
     }
     .tratamento-label-box {
         background-color: var(--light-bg);
@@ -93,7 +94,6 @@
     }
 </style>
 
-<!-- Adicione logo abaixo da sua tag <style> -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     /* Estilização para o Select2 combinar com o seu sistema */
@@ -128,7 +128,6 @@
         <div class="secao-titulo"><i class="fa-solid fa-user me-2"></i> Dados Pessoais</div>
         <div class="row g-3">
             
-            <!-- Todos os 4 campos na mesma linha com larguras iguais (3+3+3+3 = 12) -->
             <div class="col-md-2">
                 <label class="form-label">Prontuário</label>
                 {{ form.prontuario }}
@@ -179,7 +178,7 @@
     {% if form.instance.pk %}
 
         <!-- ========================================== -->
-        <!-- BLOCO 3: HISTÓRICO DE TRATAMENTOS         -->
+        <!-- BLOCO 3: HISTÓRICO DE TRATAMENTOS          -->
         <!-- ========================================== -->
         <div class="secao-form mb-4">
             <div class="secao-titulo"><i class="fa-solid fa-clock-rotate-left me-2"></i>Histórico de Tratamentos Registrados</div>
@@ -212,6 +211,17 @@
                         </div>
                         {{ form.data_indicacao_cirurgia }}
                         <div class="mt-2">{{ form.obs_indicacao_cirurgia }}</div>
+                    </div>
+                </div>
+
+                <!-- Cirurgia Realizada (Adicionado) -->
+                <div class="col-md-4">
+                    <div class="tratamento-grupo">
+                        <div class="tratamento-label-box">
+                            {{ form.fez_cirurgia }} Cirurgia Realizada
+                        </div>
+                        {{ form.data_cirurgia }}
+                        <div class="mt-2">{{ form.qual_cirurgia }}</div> <!-- Placeholder no forms já indica 'Detalhes' -->
                     </div>
                 </div>
 
@@ -348,22 +358,6 @@
 
     document.addEventListener("DOMContentLoaded", function() {
         
-        function configurarGatilho(idCheckbox, idCampo) {
-            const checkbox = document.getElementById(idCheckbox);
-            const campo = document.getElementById(idCampo);
-            
-            if (checkbox && campo) {
-                const toggleDisable = () => {
-                    campo.disabled = !checkbox.checked;
-                    if (!checkbox.checked) {
-                        campo.value = ''; 
-                    }
-                };
-                toggleDisable(); 
-                checkbox.addEventListener('change', toggleDisable); 
-            }
-        }
-
         function configurarGatilhoMultiplo(idCheckbox, arrayIdsCampos) {
             const checkbox = document.getElementById(idCheckbox);
             
@@ -386,7 +380,7 @@
 
         // Gatilhos de Tratamentos
         configurarGatilhoMultiplo('id_indicacao_cirurgia', ['id_data_indicacao_cirurgia', 'id_obs_indicacao_cirurgia']);
-        configurarGatilhoMultiplo('id_fez_cirurgia', ['id_data_cirurgia', 'id_qual_cirurgia']);
+        configurarGatilhoMultiplo('id_fez_cirurgia', ['id_data_cirurgia', 'id_qual_cirurgia']); // O gatilho da cirurgia já estava correto!
         configurarGatilhoMultiplo('id_fez_qt', ['id_data_qt', 'id_obs_qt']);
         configurarGatilhoMultiplo('id_fez_rt', ['id_data_rt', 'id_obs_rt']);
         configurarGatilhoMultiplo('id_fez_cirurgia_rt', ['id_data_cirurgia_rt', 'id_obs_cirurgia_rt']);

@@ -20,7 +20,7 @@ class PacienteForm(forms.ModelForm):
     
     fez_cirurgia = forms.BooleanField(required=False)
     data_cirurgia = forms.DateField(required=False, widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'class': 'form-control'}))
-    qual_cirurgia = forms.CharField(required=False, max_length=200, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    qual_cirurgia = forms.CharField(required=False, max_length=200, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Qual cirurgia/detalhes...'}))
 
     fez_qt = forms.BooleanField(required=False)
     data_qt = forms.DateField(required=False, widget=forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date', 'class': 'form-control'}))

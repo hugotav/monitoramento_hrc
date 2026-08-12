@@ -136,8 +136,8 @@ class Paciente(models.Model):
 
     @property
     def data_primeiro_tratamento(self):
-        """Busca a data mais antiga na tabela separada de histórico"""
-        primeiro = self.tratamentos.order_by('data').first()
+        """Busca a data mais antiga na tabela separada de histórico, ignorando 'Indicação de Cirurgia'"""
+        primeiro = self.tratamentos.exclude(tipo_tratamento='Indicação de Cirurgia').order_by('data').first()
         if primeiro:
             return primeiro.data
         return None

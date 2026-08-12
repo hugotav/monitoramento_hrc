@@ -10,7 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
-#import os
+##
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,6 +26,7 @@ SECRET_KEY = 'django-insecure-5zqf_bd%lujjc@=2+!n7&bmuq(f+45^u(u9%-@za@s7w&@hwj*
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
+##
 DEBUG = True
 ALLOWED_HOSTS = []
 
@@ -134,4 +136,5 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'aba_cadastro'
 LOGOUT_REDIRECT_URL = 'login'
 
-#STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+##
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
