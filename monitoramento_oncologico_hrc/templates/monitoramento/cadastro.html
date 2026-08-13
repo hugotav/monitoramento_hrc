@@ -432,10 +432,12 @@
             });
         });
 
-        // Limpa todas as marcações vermelhas se o formulário for enviado novamente
-        form.addEventListener('submit', function() {
-            inputsObrigatorios.forEach(input => input.classList.remove('campo-invalido'));
-        });
+        // Limpa todas as marcações vermelhas se o formulário for enviado
+        if(form){
+            form.addEventListener('submit', function() {
+                inputsObrigatorios.forEach(input => input.classList.remove('campo-invalido'));
+            });
+        }
         
         // -------------------------------------------------------------
         // GATILHOS DOS CAMPOS DE TRATAMENTO
@@ -474,7 +476,7 @@
         configurarGatilhoMultiplo('id_fez_imunoterapia', ['id_data_imunoterapia', 'id_obs_imunoterapia']);
 
         // -------------------------------------------------------------
-        // REGRA 2: DEPENDÊNCIA (Especialidade -> Diagnóstico -> Tratamento)
+        // REGRA 2: DEPENDÊNCIA (Especialidade -> Diagnóstico)
         // -------------------------------------------------------------
         const selectEspecialidade = document.getElementById('id_especialidade');
         const selectDiagnostico = document.getElementById('id_diagnostico');
@@ -490,7 +492,7 @@
                 }
             }
 
-            // 2. Diagnóstico habilita Data do Diagnóstico e os Blocos de Tratamentos
+            // 2. Diagnóstico habilita APENAS a Data do Diagnóstico (Tratamentos estão livres agora)
             if (selectDiagnostico) {
                 const diagVazio = (selectDiagnostico.value === '' || selectDiagnostico.value === null);
                 
@@ -499,16 +501,6 @@
                     campoDataDiagnostico.disabled = diagVazio;
                     if (diagVazio) campoDataDiagnostico.value = '';
                 }
-
-                // Trata os checkboxes de Tratamento (Bloqueia e desmarca todos se não tiver diagnóstico)
-                const checkboxesTratamento = document.querySelectorAll('.tratamento-label-box input[type="checkbox"]');
-                checkboxesTratamento.forEach(cb => {
-                    cb.disabled = diagVazio;
-                    if (diagVazio && cb.checked) {
-                        cb.checked = false;
-                        cb.dispatchEvent(new Event('change')); // Aciona a limpeza dos campos de data dependentes
-                    }
-                });
             }
         }
 
@@ -519,7 +511,7 @@
         
         if (selectDiagnostico) {
             selectDiagnostico.addEventListener('change', verificarCascata);
-            // Captura o evento específico do Select2 (já que ele cria uma camada de interface em cima do select real)
+            // Captura o evento específico do Select2
             if (window.jQuery) {
                 $('#id_diagnostico').on('select2:select select2:clear', function () {
                     verificarCascata();
@@ -527,7 +519,7 @@
             }
         }
         
-        // Executa a primeira verificação ao carregar a página (importante para edições)
+        // Executa a primeira verificação ao carregar a página
         verificarCascata();
     });
 </script>
