@@ -111,43 +111,62 @@
 </div>
 
 <!-- ========================================== -->
-<!-- LINHA 1: TOTAL DE PACIENTES + FILTROS      -->
+<!-- LINHA 1: TOTAL + FILTROS SIMULTÂNEOS       -->
 <!-- ========================================== -->
 <div class="row mb-4 align-items-stretch">
-    <!-- Card Total (Lado Esquerdo) -->
-    <div class="col-md-3">
-        <div class="kpi-card text-center d-flex justify-content-center align-items-center h-100" style="border-left-color: var(--cor-azul-base);">
+    <!-- Card Total -->
+    <div class="col-md-2">
+        <div class="kpi-card text-center d-flex justify-content-center align-items-center h-100 shadow-sm" style="border-left-color: var(--cor-azul-base); padding: 10px;">
             <div>
-                <div class="kpi-titulo">Total de Pacientes</div>
+                <div class="kpi-titulo" style="font-size: 0.8rem;">Total Filtrado</div>
                 <div class="kpi-valor" style="font-size: 2.5rem; color: var(--cor-azul-base);">{{ total_pacientes }}</div>
             </div>
         </div>
     </div>
     
-    <!-- Filtros (Lado Direito) -->
-    <div class="col-md-9">
-        <div class="filtro-box h-100 mb-0 d-flex flex-column justify-content-center">
-            <form method="GET" class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold text-muted">Data Inicial</label>
-                    <input type="date" name="data_inicio" class="form-control" value="{{ request.GET.data_inicio }}">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold text-muted">Data Final</label>
-                    <input type="date" name="data_fim" class="form-control" value="{{ request.GET.data_fim }}">
+    <!-- Filtros Cruzados (Agora com mais espaço) -->
+    <div class="col-md-10">
+        <div class="filtro-box h-100 mb-0 p-3 shadow-sm">
+            <form method="GET" class="row g-3">
+                <!-- Linha 1 do Filtro: Datas -->
+                <div class="col-md-4">
+                    <label class="form-label mb-1" style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">Período Entrada HRC</label>
+                    <div class="input-group input-group-sm">
+                        <input type="date" name="entrada_inicio" class="form-control" value="{{ request.GET.entrada_inicio }}">
+                        <span class="input-group-text px-2 border-0 bg-transparent">a</span>
+                        <input type="date" name="entrada_fim" class="form-control" value="{{ request.GET.entrada_fim }}">
+                    </div>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label small fw-bold text-muted">Especialidade</label>
-                    <select name="especialidade" class="form-select">
+                    <label class="form-label mb-1" style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">Período Diagnóstico</label>
+                    <div class="input-group input-group-sm">
+                        <input type="date" name="diag_inicio" class="form-control" value="{{ request.GET.diag_inicio }}">
+                        <span class="input-group-text px-2 border-0 bg-transparent">a</span>
+                        <input type="date" name="diag_fim" class="form-control" value="{{ request.GET.diag_fim }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label mb-1" style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">Período Tratamento</label>
+                    <div class="input-group input-group-sm">
+                        <input type="date" name="trat_inicio" class="form-control" value="{{ request.GET.trat_inicio }}">
+                        <span class="input-group-text px-2 border-0 bg-transparent">a</span>
+                        <input type="date" name="trat_fim" class="form-control" value="{{ request.GET.trat_fim }}">
+                    </div>
+                </div>
+                
+                <!-- Linha 2 do Filtro: Especialidade e Botões -->
+                <div class="col-md-8">
+                    <label class="form-label mb-1" style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted);">Especialidade</label>
+                    <select name="especialidade" class="form-select form-select-sm">
                         <option value="">Todas as Especialidades</option>
                         {% for valor, rotulo in especialidades_opcoes %}
                             <option value="{{ valor }}" {% if request.GET.especialidade == valor %}selected{% endif %}>{{ rotulo }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-2 d-flex">
-                    <button type="submit" class="btn w-100 me-2 text-white" style="background-color: var(--cor-azul-base); border: none;"><i class="fa-solid fa-filter me-1"></i> Filtrar</button>
-                    <a href="{% url 'aba_metricas' %}" class="btn btn-outline-secondary"><i class="fa-solid fa-eraser"></i></a>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-sm w-100 me-2 text-white" style="background-color: var(--cor-azul-base);"><i class="fa-solid fa-filter me-1"></i> Filtrar</button>
+                    <a href="{% url 'aba_metricas' %}" class="btn btn-sm btn-outline-secondary w-100"><i class="fa-solid fa-eraser me-1"></i> Limpar</a>
                 </div>
             </form>
         </div>
@@ -155,55 +174,127 @@
 </div>
 
 <!-- ========================================== -->
-<!-- CARDS DE MÉDIAS DE TEMPO (3 EM CADA LINHA) -->
+<!-- 14 CARDS DE MÉDIAS DE TEMPO                -->
 <!-- ========================================== -->
 
-<!-- Linha de Médias de Diagnóstico -->
+<!-- ================= DIAGNÓSTICO ================= -->
+<div class="mt-4 mb-3 pb-2 border-bottom">
+    <h5 class="fw-bold text-dark"><i class="fa-solid fa-stethoscope me-2" style="color: var(--cor-azul-base);"></i> Diagnóstico (Meta: 30 dias)</h5>
+</div>
+
+<!-- Média Geral: Largura total (col-md-12), fundo azul, com um "card interno" de borda branca centralizado -->
 <div class="row g-3 mb-3">
-    <div class="col-md-4">
-        <div class="kpi-card text-white" style="background-color: var(--cor-azul-base); border: none;">
-            <div class="kpi-titulo text-white-50">Média Geral: Diagnóstico</div>
-            <div class="kpi-valor text-white">{{ medias_diag.geral }} <span class="fs-6 fw-normal">dias</span></div>
-            <div class="kpi-sub text-white-50">Todos os pacientes</div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="kpi-card success">
-            <div class="kpi-titulo">Média: Diag. no Prazo</div>
-            <div class="kpi-valor">{{ medias_diag.no_prazo }} <span class="fs-6 fw-normal">dias</span></div>
-            <div class="kpi-sub">Dentro da meta (≤ 30d)</div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="kpi-card danger">
-            <div class="kpi-titulo">Média: Diag. Atrasado</div>
-            <div class="kpi-valor">{{ medias_diag.atrasado }} <span class="fs-6 fw-normal">dias</span></div>
-            <div class="kpi-sub">Média total para os fora da meta</div>
+    <div class="col-md-12">
+        <div class="shadow-sm" style="background-color: var(--cor-azul-base); border-radius: 12px; padding: 12px;">
+            <div class="text-center py-3" style="border: 2px solid #ffffff; border-radius: 8px;">
+                <div class="text-white-50 fw-bold text-uppercase mb-1" style="font-size: 0.85rem; letter-spacing: 1px;">Média Geral (Recebeu + Não Recebeu)</div>
+                <div class="text-white fw-bold" style="font-size: 1.6rem; line-height: 1;">{{ medias_diag.geral }} <span class="fs-5 fw-normal">dias</span></div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Linha de Médias de Tratamento -->
+<div class="row g-3 mb-2">
+    <!-- Já Receberam -->
+    <div class="col-md-4">
+        <div class="kpi-card shadow-sm" style="border-left-color: var(--text-muted);">
+            <div class="kpi-titulo">Média: JÁ Receberam</div>
+            <div class="kpi-valor">{{ medias_diag.conc_geral }} <span class="fs-6 fw-normal">dias</span></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card success shadow-sm">
+            <div class="kpi-titulo">Média: JÁ Receberam NO PRAZO</div>
+            <div class="kpi-valor">{{ medias_diag.conc_prazo }} <span class="fs-6 fw-normal">dias</span></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card danger shadow-sm">
+            <div class="kpi-titulo">Média: JÁ Receberam ATRASADOS</div>
+            <div class="kpi-valor">{{ medias_diag.conc_atraso }} <span class="fs-6 fw-normal">dias</span></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-5">
+    <!-- Ainda NÃO Receberam -->
+    <div class="col-md-4">
+        <div class="kpi-card shadow-sm" style="border-left-color: var(--text-muted);">
+            <div class="kpi-titulo">Média: NÃO Receberam (Aguardando)</div>
+            <div class="kpi-valor">{{ medias_diag.pend_geral }} <span class="fs-6 fw-normal">dias</span></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card warning shadow-sm">
+            <div class="kpi-titulo">Média: NÃO Receberam, MAS NO PRAZO</div>
+            <div class="kpi-valor">{{ medias_diag.pend_prazo }} <span class="fs-6 fw-normal">dias</span></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card danger shadow-sm">
+            <div class="kpi-titulo">Média: NÃO Receberam E JÁ ATRASADOS</div>
+            <div class="kpi-valor">{{ medias_diag.pend_atraso }} <span class="fs-6 fw-normal">dias</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= TRATAMENTO ================= -->
+<div class="mt-4 mb-3 pb-2 border-bottom">
+    <h5 class="fw-bold text-dark"><i class="fa-solid fa-notes-medical me-2" style="color: var(--cor-azul-base);"></i> Tratamento (Meta: 60 dias)</h5>
+</div>
+
+<!-- Média Geral: Largura total (col-md-12), fundo azul, com um "card interno" de borda branca centralizado -->
+<div class="row g-3 mb-3">
+    <div class="col-md-12">
+        <div class="shadow-sm" style="background-color: var(--cor-azul-base); border-radius: 12px; padding: 12px;">
+            <div class="text-center py-3" style="border: 2px solid #ffffff; border-radius: 8px;">
+                <div class="text-white-50 fw-bold text-uppercase mb-1" style="font-size: 0.85rem; letter-spacing: 1px;">Média Geral (Recebeu + Não Recebeu)</div>
+                <div class="text-white fw-bold" style="font-size: 1.6rem; line-height: 1;">{{ medias_trat.geral }} <span class="fs-5 fw-normal">dias</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-2">
+    <!-- Já Receberam -->
+    <div class="col-md-4">
+        <div class="kpi-card shadow-sm" style="border-left-color: var(--text-muted);">
+            <div class="kpi-titulo">Média: JÁ Receberam Trat.</div>
+            <div class="kpi-valor">{{ medias_trat.conc_geral }} <span class="fs-6 fw-normal">dias</span></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card success shadow-sm">
+            <div class="kpi-titulo">Média: JÁ Receberam NO PRAZO</div>
+            <div class="kpi-valor">{{ medias_trat.conc_prazo }} <span class="fs-6 fw-normal">dias</span></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card danger shadow-sm">
+            <div class="kpi-titulo">Média: JÁ Receberam ATRASADOS</div>
+            <div class="kpi-valor">{{ medias_trat.conc_atraso }} <span class="fs-6 fw-normal">dias</span></div>
+        </div>
+    </div>
+</div>
+
 <div class="row g-3 mb-4">
+    <!-- Ainda NÃO Receberam -->
     <div class="col-md-4">
-        <div class="kpi-card text-white" style="background-color: var(--cor-azul-base); border: none;">
-            <div class="kpi-titulo text-white-50">Média Geral: Tratamento</div>
-            <div class="kpi-valor text-white">{{ medias_trat.geral }} <span class="fs-6 fw-normal">dias</span></div>
-            <div class="kpi-sub text-white-50">Todos os pacientes</div>
+        <div class="kpi-card shadow-sm" style="border-left-color: var(--text-muted);">
+            <div class="kpi-titulo">Média: NÃO Receberam Trat. (Aguardando)</div>
+            <div class="kpi-valor">{{ medias_trat.pend_geral }} <span class="fs-6 fw-normal">dias</span></div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="kpi-card success">
-            <div class="kpi-titulo">Média: Trat. no Prazo</div>
-            <div class="kpi-valor">{{ medias_trat.no_prazo }} <span class="fs-6 fw-normal">dias</span></div>
-            <div class="kpi-sub">Dentro da meta (≤ 60d)</div>
+        <div class="kpi-card warning shadow-sm">
+            <div class="kpi-titulo">Média: NÃO Receberam, MAS NO PRAZO</div>
+            <div class="kpi-valor">{{ medias_trat.pend_prazo }} <span class="fs-6 fw-normal">dias</span></div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="kpi-card danger">
-            <div class="kpi-titulo">Média: Trat. Atrasado</div>
-            <div class="kpi-valor">{{ medias_trat.atrasado }} <span class="fs-6 fw-normal">dias</span></div>
-            <div class="kpi-sub">Média total para os fora da meta</div>
+        <div class="kpi-card danger shadow-sm">
+            <div class="kpi-titulo">Média: NÃO Receberam E JÁ ATRASADOS</div>
+            <div class="kpi-valor">{{ medias_trat.pend_atraso }} <span class="fs-6 fw-normal">dias</span></div>
         </div>
     </div>
 </div>
@@ -224,6 +315,22 @@
         <div class="chart-container">
             <div class="chart-title">Acesso ao Tratamento</div>
             <div class="chart-canvas-wrapper"><canvas id="chartStatusTrat"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- LINHA 4: Gargalos (Diagnóstico e Tratamento por Especialidade) -->
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="chart-container">
+            <div class="chart-title">Atraso Diagnóstico por Especialidade (Dias)</div>
+            <div class="chart-canvas-wrapper"><canvas id="chartAtrasoDiagEsp"></canvas></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-container">
+            <div class="chart-title">Atraso Tratamento por Especialidade (Dias)</div>
+            <div class="chart-canvas-wrapper"><canvas id="chartAtrasoTratEsp"></canvas></div>
         </div>
     </div>
 </div>
@@ -256,22 +363,6 @@
         <div class="chart-container">
             <div class="chart-title">Volume de Tratamentos Executados</div>
             <div class="chart-canvas-wrapper"><canvas id="chartVolTrat"></canvas></div>
-        </div>
-    </div>
-</div>
-
-<!-- LINHA 4: Gargalos (Diagnóstico e Tratamento por Especialidade) -->
-<div class="row g-3 mb-3">
-    <div class="col-md-6">
-        <div class="chart-container">
-            <div class="chart-title">Atraso Diagnóstico por Especialidade (Dias)</div>
-            <div class="chart-canvas-wrapper"><canvas id="chartAtrasoDiagEsp"></canvas></div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="chart-container">
-            <div class="chart-title">Atraso Tratamento por Especialidade (Dias)</div>
-            <div class="chart-canvas-wrapper"><canvas id="chartAtrasoTratEsp"></canvas></div>
         </div>
     </div>
 </div>

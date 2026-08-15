@@ -58,6 +58,9 @@
                 <th>Nome</th>
                 <th>Especialidade</th>
                 <th>Situação</th>
+                <th>Entrada HRC</th>
+                <th>Data Diagnóstico</th>
+                <th>1º Tratamento</th>
                 <th>Dias p/ Diagnóstico</th>
                 <th>Dias p/ Tratamento</th>
                 <th>Ações</th>
@@ -76,6 +79,31 @@
                 <td>{{ p.get_especialidade_display }}</td>
                 <td>
                     <span class="badge {% if p.ativo %}bg-secondary{% else %}bg-dark{% endif %}">{{ p.situacao }}</span>
+                </td>
+
+                <!-- Colunas de Datas Corrigidas (Usando a variável 'p') -->
+                <td>
+                    {% if p.data_entrada %}
+                        {{ p.data_entrada|date:"d/m/Y" }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if p.data_diagnostico %}
+                        {{ p.data_diagnostico|date:"d/m/Y" }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if p.data_primeiro_tratamento %}
+                        {{ p.data_primeiro_tratamento|date:"d/m/Y" }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
                 </td>
                 
                 <!-- Dias p/ Diagnóstico -->
@@ -131,7 +159,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="7" class="text-center py-4">Nenhum paciente encontrado.</td>
+                <td colspan="10" class="text-center py-4">Nenhum paciente encontrado.</td>
             </tr>
             {% endfor %}
         </tbody>

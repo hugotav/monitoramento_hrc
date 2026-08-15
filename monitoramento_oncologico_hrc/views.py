@@ -19,8 +19,7 @@ def aba_cadastro(request):
             
             # Mapeamento atualizado para salvar tratamentos com suporte a observações
             tratamentos_map = [
-                ('indicacao_cirurgia', 'data_indicacao_cirurgia', 'Indicação de Cirurgia', 'obs_indicacao_cirurgia'),
-                ('fez_qt', 'data_qt', 'Quimioterapia (QT)', 'obs_qt'),
+                ('indicacao_cirurgia', 'data_indicacao_cirurgia', 'Indicação de Conduta', 'obs_indicacao_cirurgia'),('fez_qt', 'data_qt', 'Quimioterapia (QT)', 'obs_qt'),
                 ('fez_rt', 'data_rt', 'Radioterapia (RT)', 'obs_rt'),
                 ('fez_cirurgia_rt', 'data_cirurgia_rt', 'Cirurgia + RT', 'obs_cirurgia_rt'),
                 ('fez_cirurgia_qt', 'data_cirurgia_qt', 'Cirurgia + QT', 'obs_cirurgia_qt'),
@@ -91,10 +90,14 @@ def aba_dados(request):
 @login_required(login_url='login')
 def aba_metricas(request):
     # ==========================================
-    # 1. CAPTURAR FILTROS
+    # 1. CAPTURAR FILTROS CRUZADOS SIMULTÂNEOS
     # ==========================================
-    data_inicio_str = request.GET.get('data_inicio')
-    data_fim_str = request.GET.get('data_fim')
+    entrada_inicio = request.GET.get('entrada_inicio')
+    entrada_fim = request.GET.get('entrada_fim')
+    diag_inicio = request.GET.get('diag_inicio')
+    diag_fim = request.GET.get('diag_fim')
+    trat_inicio = request.GET.get('trat_inicio')
+    trat_fim = request.GET.get('trat_fim')
     filtro_especialidade = request.GET.get('especialidade')
 
     pacientes = Paciente.objects.all()
@@ -104,12 +107,18 @@ def aba_metricas(request):
         pacientes = pacientes.filter(especialidade=filtro_especialidade)
         tratamentos = tratamentos.filter(paciente__especialidade=filtro_especialidade)
 
-    if data_inicio_str and data_fim_str:
-        data_inicio = datetime.strptime(data_inicio_str, '%Y-%m-%d').date()
-        data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d').date()
+    if entrada_inicio and entrada_fim:
+        pacientes = pacientes.filter(data_entrada__range=[entrada_inicio, entrada_fim])
+        tratamentos = tratamentos.filter(paciente__data_entrada__range=[entrada_inicio, entrada_fim])
         
-        pacientes = pacientes.filter(data_entrada__range=[data_inicio, data_fim])
-        tratamentos = tratamentos.filter(data__range=[data_inicio, data_fim])
+    if diag_inicio and diag_fim:
+        pacientes = pacientes.filter(data_diagnostico__range=[diag_inicio, diag_fim])
+        tratamentos = tratamentos.filter(paciente__data_diagnostico__range=[diag_inicio, diag_fim])
+
+    if trat_inicio and trat_fim:
+        pac_tratados_ids = tratamentos.filter(data__range=[trat_inicio, trat_fim]).values_list('paciente_id', flat=True)
+        pacientes = pacientes.filter(id__in=pac_tratados_ids)
+        tratamentos = tratamentos.filter(data__range=[trat_inicio, trat_fim])
 
     # ==========================================
     # 2. INICIALIZAR CONTADORES
@@ -117,23 +126,24 @@ def aba_metricas(request):
     dict_especialidades = dict(Paciente.ESPECIALIDADES)
     hoje = date.today()
 
-    vol_cid = {}
-    vol_esp = {}
+    vol_cid, vol_esp = {}, {}
     cid_sexo = {'Masculino': 0, 'Feminino': 0, 'Não Informado': 0}
     cid_idade = {'0-18': 0, '19-35': 0, '36-50': 0, '51-65': 0, '65+': 0}
 
-    # Variáveis para médias de Diagnóstico
-    soma_dias_diag_geral, qtd_diag_geral = 0, 0
-    soma_dias_diag_no_prazo, qtd_diag_no_prazo = 0, 0
-    soma_dias_diag_atrasado, qtd_diag_atrasado = 0, 0
-    diag_no_prazo, diag_fora_prazo = 0, 0
+    # Variáveis Diagnóstico
+    soma_diag_conc_prazo, qtd_diag_conc_prazo = 0, 0
+    soma_diag_conc_atraso, qtd_diag_conc_atraso = 0, 0
+    soma_diag_pend_prazo, qtd_diag_pend_prazo = 0, 0
+    soma_diag_pend_atraso, qtd_diag_pend_atraso = 0, 0
+    diag_no_prazo, diag_fora_prazo = 0, 0 # Para o gráfico SLA
     atraso_por_esp_diag = {}
 
-    # Variáveis para médias de Tratamento
-    soma_dias_trat_geral, qtd_trat_geral = 0, 0
-    soma_dias_trat_no_prazo, qtd_trat_no_prazo = 0, 0
-    soma_dias_trat_atrasado, qtd_trat_atrasado = 0, 0
-    trat_no_prazo, trat_fora_prazo = 0, 0
+    # Variáveis Tratamento
+    soma_trat_conc_prazo, qtd_trat_conc_prazo = 0, 0
+    soma_trat_conc_atraso, qtd_trat_conc_atraso = 0, 0
+    soma_trat_pend_prazo, qtd_trat_pend_prazo = 0, 0
+    soma_trat_pend_atraso, qtd_trat_pend_atraso = 0, 0
+    trat_no_prazo, trat_fora_prazo = 0, 0 # Para o gráfico SLA
     atraso_por_esp_trat = {}
 
     # ==========================================
@@ -158,55 +168,53 @@ def aba_metricas(request):
             cid_curto = p.diagnostico.split(' - ')[0] if ' - ' in p.diagnostico else p.diagnostico
             vol_cid[cid_curto] = vol_cid.get(cid_curto, 0) + 1
 
-        # --- Lógica de Diagnóstico (Entrada -> Diagnóstico) ---
+        # --- Lógica de Diagnóstico (Meta: 30 dias) ---
         if p.data_entrada:
             if p.data_diagnostico:
                 dias_diag = (p.data_diagnostico - p.data_entrada).days
-                if dias_diag < 0: dias_diag = 0
+                if dias_diag >= 0:
+                    if dias_diag <= 30: 
+                        soma_diag_conc_prazo += dias_diag; qtd_diag_conc_prazo += 1
+                        diag_no_prazo += 1
+                    else: 
+                        soma_diag_conc_atraso += dias_diag; qtd_diag_conc_atraso += 1
+                        diag_fora_prazo += 1
+                        excedente = dias_diag - 30
+                        if nome_esp not in atraso_por_esp_diag: atraso_por_esp_diag[nome_esp] = {'soma': 0, 'qtd': 0}
+                        atraso_por_esp_diag[nome_esp]['soma'] += excedente
+                        atraso_por_esp_diag[nome_esp]['qtd'] += 1
             else:
-                dias_diag = (hoje - p.data_entrada).days # Pendente
+                dias_diag = (hoje - p.data_entrada).days
+                if dias_diag >= 0:
+                    if dias_diag <= 30:
+                        soma_diag_pend_prazo += dias_diag; qtd_diag_pend_prazo += 1
+                    else:
+                        soma_diag_pend_atraso += dias_diag; qtd_diag_pend_atraso += 1
 
-            soma_dias_diag_geral += dias_diag
-            qtd_diag_geral += 1
+        # --- Lógica de Tratamento (Meta: 60 dias) ---
+        if p.data_diagnostico and p.data_entrada:
+            data_base_tratamento = p.data_entrada if p.data_diagnostico < p.data_entrada else p.data_diagnostico
 
-            if dias_diag <= 30:
-                soma_dias_diag_no_prazo += dias_diag
-                qtd_diag_no_prazo += 1
-                diag_no_prazo += 1
-            else:
-                soma_dias_diag_atrasado += dias_diag
-                qtd_diag_atrasado += 1
-                diag_fora_prazo += 1
-                
-                excedente = dias_diag - 30
-                if nome_esp not in atraso_por_esp_diag: atraso_por_esp_diag[nome_esp] = {'soma': 0, 'qtd': 0}
-                atraso_por_esp_diag[nome_esp]['soma'] += excedente
-                atraso_por_esp_diag[nome_esp]['qtd'] += 1
-
-        # --- Lógica de Tratamento (Diagnóstico -> 1º Tratamento) ---
-        if p.data_diagnostico:
             if p.data_primeiro_tratamento:
-                dias_trat = (p.data_primeiro_tratamento - p.data_diagnostico).days
-                if dias_trat < 0: dias_trat = 0
+                dias_trat = (p.data_primeiro_tratamento - data_base_tratamento).days
+                if dias_trat >= 0:
+                    if dias_trat <= 60: 
+                        soma_trat_conc_prazo += dias_trat; qtd_trat_conc_prazo += 1
+                        trat_no_prazo += 1
+                    else: 
+                        soma_trat_conc_atraso += dias_trat; qtd_trat_conc_atraso += 1
+                        trat_fora_prazo += 1
+                        excedente = dias_trat - 60
+                        if nome_esp not in atraso_por_esp_trat: atraso_por_esp_trat[nome_esp] = {'soma': 0, 'qtd': 0}
+                        atraso_por_esp_trat[nome_esp]['soma'] += excedente
+                        atraso_por_esp_trat[nome_esp]['qtd'] += 1
             else:
-                dias_trat = (hoje - p.data_diagnostico).days # Pendente
-
-            soma_dias_trat_geral += dias_trat
-            qtd_trat_geral += 1
-
-            if dias_trat <= 60:
-                soma_dias_trat_no_prazo += dias_trat
-                qtd_trat_no_prazo += 1
-                trat_no_prazo += 1
-            else:
-                soma_dias_trat_atrasado += dias_trat
-                qtd_trat_atrasado += 1
-                trat_fora_prazo += 1
-                
-                excedente = dias_trat - 60
-                if nome_esp not in atraso_por_esp_trat: atraso_por_esp_trat[nome_esp] = {'soma': 0, 'qtd': 0}
-                atraso_por_esp_trat[nome_esp]['soma'] += excedente
-                atraso_por_esp_trat[nome_esp]['qtd'] += 1
+                dias_trat = (hoje - data_base_tratamento).days
+                if dias_trat >= 0:
+                    if dias_trat <= 60:
+                        soma_trat_pend_prazo += dias_trat; qtd_trat_pend_prazo += 1
+                    else:
+                        soma_trat_pend_atraso += dias_trat; qtd_trat_pend_atraso += 1
 
     # ==========================================
     # 4. PROCESSAR DADOS DE TRATAMENTOS
@@ -216,8 +224,7 @@ def aba_metricas(request):
 
     for t in tratamentos:
         tipo = t.tipo_tratamento
-
-        if tipo == 'Indicação de Cirurgia':
+        if tipo in ['Indicação de Conduta', 'Indicação de Cirurgia']:
             continue
 
         vol_tratamentos[tipo] = vol_tratamentos.get(tipo, 0) + 1
@@ -230,34 +237,45 @@ def aba_metricas(request):
     # ==========================================
     def calcular_media(soma, qtd): return round(soma / qtd, 1) if qtd > 0 else 0
 
-    media_atraso_esp_diag = {esp: calcular_media(d['soma'], d['qtd']) for esp, d in atraso_por_esp_diag.items()}
-    media_atraso_esp_trat = {esp: calcular_media(d['soma'], d['qtd']) for esp, d in atraso_por_esp_trat.items()}
+    soma_diag_geral = soma_diag_conc_prazo + soma_diag_conc_atraso + soma_diag_pend_prazo + soma_diag_pend_atraso
+    qtd_diag_geral = qtd_diag_conc_prazo + qtd_diag_conc_atraso + qtd_diag_pend_prazo + qtd_diag_pend_atraso
+    
+    soma_trat_geral = soma_trat_conc_prazo + soma_trat_conc_atraso + soma_trat_pend_prazo + soma_trat_pend_atraso
+    qtd_trat_geral = qtd_trat_conc_prazo + qtd_trat_conc_atraso + qtd_trat_pend_prazo + qtd_trat_pend_atraso
 
     context = {
         'total_pacientes': pacientes.count(),
         'especialidades_opcoes': Paciente.ESPECIALIDADES,
         
-        # Novas variáveis de médias organizadas
         'medias_diag': {
-            'geral': calcular_media(soma_dias_diag_geral, qtd_diag_geral),
-            'no_prazo': calcular_media(soma_dias_diag_no_prazo, qtd_diag_no_prazo),
-            'atrasado': calcular_media(soma_dias_diag_atrasado, qtd_diag_atrasado),
+            'geral': calcular_media(soma_diag_geral, qtd_diag_geral),
+            'conc_geral': calcular_media(soma_diag_conc_prazo + soma_diag_conc_atraso, qtd_diag_conc_prazo + qtd_diag_conc_atraso),
+            'conc_prazo': calcular_media(soma_diag_conc_prazo, qtd_diag_conc_prazo),
+            'conc_atraso': calcular_media(soma_diag_conc_atraso, qtd_diag_conc_atraso),
+            'pend_geral': calcular_media(soma_diag_pend_prazo + soma_diag_pend_atraso, qtd_diag_pend_prazo + qtd_diag_pend_atraso),
+            'pend_prazo': calcular_media(soma_diag_pend_prazo, qtd_diag_pend_prazo),
+            'pend_atraso': calcular_media(soma_diag_pend_atraso, qtd_diag_pend_atraso),
         },
         'medias_trat': {
-            'geral': calcular_media(soma_dias_trat_geral, qtd_trat_geral),
-            'no_prazo': calcular_media(soma_dias_trat_no_prazo, qtd_trat_no_prazo),
-            'atrasado': calcular_media(soma_dias_trat_atrasado, qtd_trat_atrasado),
+            'geral': calcular_media(soma_trat_geral, qtd_trat_geral),
+            'conc_geral': calcular_media(soma_trat_conc_prazo + soma_trat_conc_atraso, qtd_trat_conc_prazo + qtd_trat_conc_atraso),
+            'conc_prazo': calcular_media(soma_trat_conc_prazo, qtd_trat_conc_prazo),
+            'conc_atraso': calcular_media(soma_trat_conc_atraso, qtd_trat_conc_atraso),
+            'pend_geral': calcular_media(soma_trat_pend_prazo + soma_trat_pend_atraso, qtd_trat_pend_prazo + qtd_trat_pend_atraso),
+            'pend_prazo': calcular_media(soma_trat_pend_prazo, qtd_trat_pend_prazo),
+            'pend_atraso': calcular_media(soma_trat_pend_atraso, qtd_trat_pend_atraso),
         },
         
         'diag_no_prazo': diag_no_prazo, 'diag_fora_prazo': diag_fora_prazo,
         'trat_no_prazo': trat_no_prazo, 'trat_fora_prazo': trat_fora_prazo,
+        
         'g_vol_cid': json.dumps({'labels': list(vol_cid.keys()), 'dados': list(vol_cid.values())}),
         'g_vol_esp': json.dumps({'labels': list(vol_esp.keys()), 'dados': list(vol_esp.values())}),
         'g_cid_sexo': json.dumps({'labels': list(cid_sexo.keys()), 'dados': list(cid_sexo.values())}),
         'g_cid_idade': json.dumps({'labels': list(cid_idade.keys()), 'dados': list(cid_idade.values())}),
         'g_vol_trat': json.dumps({'labels': list(vol_tratamentos.keys()), 'dados': list(vol_tratamentos.values())}),
-        'g_atraso_diag_esp': json.dumps({'labels': list(media_atraso_esp_diag.keys()), 'dados': list(media_atraso_esp_diag.values())}),
-        'g_atraso_trat_esp': json.dumps({'labels': list(media_atraso_esp_trat.keys()), 'dados': list(media_atraso_esp_trat.values())}),
+        'g_atraso_diag_esp': json.dumps({'labels': list({esp: calcular_media(d['soma'], d['qtd']) for esp, d in atraso_por_esp_diag.items()}.keys()), 'dados': list({esp: calcular_media(d['soma'], d['qtd']) for esp, d in atraso_por_esp_diag.items()}.values())}),
+        'g_atraso_trat_esp': json.dumps({'labels': list({esp: calcular_media(d['soma'], d['qtd']) for esp, d in atraso_por_esp_trat.items()}.keys()), 'dados': list({esp: calcular_media(d['soma'], d['qtd']) for esp, d in atraso_por_esp_trat.items()}.values())}),
         'matriz_esp_trat': matriz_esp_trat, 
     }
     return render(request, 'monitoramento/metricas.html', context)
